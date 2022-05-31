@@ -1,0 +1,1412 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Snapshot 1`] = `
+Object {
+  "Outputs": Object {
+    "AsgName": Object {
+      "Value": "test-autoscaler-asg",
+    },
+    "CustomTx": Object {
+      "Value": Object {
+        "Fn::Join": Array [
+          "",
+          Array [
+            "aws ssm send-command --targets Key=tag:benchmark,Values=transaction_group   --document-name \\"AWS-RunShellScript\\"   --document-version \\"1\\"   --parameters '{\\"workingDirectory\\":[\\"\\"],\\"executionTimeout\\":[\\"3600\\"],\\"commands\\":[\\"export STACK_NAME=test\\",\\"export BENCHMARK_CONNECTIONS=50\\",\\"export BENCHMARK_THREADS=24\\",\\"export BENCHMARK_PROGRESS=60\\",\\"export BENCHMARK_TIME=600\\",\\"export BENCHMARK_SQL_FILE=custom_transaction.sql\\",\\"cd /home/ec2-user/benchmark/\\",\\"source /home/ec2-user/benchmark/postgres_env.sh\\",\\"nohup /home/ec2-user/benchmark/benchmark_custom.sh 2>&1 &\\"]}'   --timeout-seconds 600   --max-concurrency \\"50\\"   --max-errors \\"0\\"   --cloud-watch-output-config '{\\"CloudWatchLogGroupName\\":\\"",
+            Object {
+              "Ref": "BenchmarkServiceLogGroupD6F7E1F0",
+            },
+            "\\",\\"CloudWatchOutputEnabled\\":true}'",
+          ],
+        ],
+      },
+    },
+    "DBDatabaseName": Object {
+      "Value": "postgres",
+    },
+    "DBReaderEndpoint": Object {
+      "Value": Object {
+        "Fn::GetAtt": Array [
+          "BenchmarkServiceAuroraPostgresDatabaseClusterDD5B86C0",
+          "ReadEndpoint.Address",
+        ],
+      },
+    },
+    "DBReaderPort": Object {
+      "Value": Object {
+        "Fn::GetAtt": Array [
+          "BenchmarkServiceAuroraPostgresDatabaseClusterDD5B86C0",
+          "Endpoint.Port",
+        ],
+      },
+    },
+    "DBSecretId": Object {
+      "Value": Object {
+        "Fn::Join": Array [
+          "-",
+          Array [
+            Object {
+              "Fn::Select": Array [
+                0,
+                Object {
+                  "Fn::Split": Array [
+                    "-",
+                    Object {
+                      "Fn::Select": Array [
+                        6,
+                        Object {
+                          "Fn::Split": Array [
+                            ":",
+                            Object {
+                              "Ref": "testBenchmarkServiceAuroraPostgresDatabaseClusterSecret7E21A2EF3fdaad7efa858a3daf9490cf0a702aeb",
+                            },
+                          ],
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+            Object {
+              "Fn::Select": Array [
+                1,
+                Object {
+                  "Fn::Split": Array [
+                    "-",
+                    Object {
+                      "Fn::Select": Array [
+                        6,
+                        Object {
+                          "Fn::Split": Array [
+                            ":",
+                            Object {
+                              "Ref": "testBenchmarkServiceAuroraPostgresDatabaseClusterSecret7E21A2EF3fdaad7efa858a3daf9490cf0a702aeb",
+                            },
+                          ],
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        ],
+      },
+    },
+    "DBUsername": Object {
+      "Value": "benchmark",
+    },
+    "DBWriterAZ": Object {
+      "Value": Object {
+        "Fn::GetAtt": Array [
+          "BenchmarkServiceGetWriterAZ526464F1",
+          "DBInstances.0.AvailabilityZone",
+        ],
+      },
+    },
+    "DBWriterEndpoint": Object {
+      "Value": Object {
+        "Fn::GetAtt": Array [
+          "BenchmarkServiceAuroraPostgresDatabaseClusterDD5B86C0",
+          "Endpoint.Address",
+        ],
+      },
+    },
+    "DBWriterPort": Object {
+      "Value": Object {
+        "Fn::GetAtt": Array [
+          "BenchmarkServiceAuroraPostgresDatabaseClusterDD5B86C0",
+          "Endpoint.Port",
+        ],
+      },
+    },
+    "LogGroupArn": Object {
+      "Value": Object {
+        "Fn::GetAtt": Array [
+          "BenchmarkServiceLogGroupD6F7E1F0",
+          "Arn",
+        ],
+      },
+    },
+    "LogGroupName": Object {
+      "Value": Object {
+        "Ref": "BenchmarkServiceLogGroupD6F7E1F0",
+      },
+    },
+    "PgbenchInit": Object {
+      "Value": Object {
+        "Fn::Join": Array [
+          "",
+          Array [
+            "aws ssm send-command --targets --instance-ids $(aws autoscaling describe-auto-scaling-groups --auto-scaling-group-names test-autoscaler-asg | jq -r \\".AutoScalingGroups[].Instances | first .InstanceId\\") --document-name \\"AWS-RunShellScript\\" --document-version \\"1\\" --parameters '{\\"workingDirectory\\":[\\"\\"],\\"executionTimeout\\":[\\"3600\\"],\\"commands\\":[\\"export STACK_NAME=test\\",\\"export BENCHMARK_SCALE_FACTOR=10000\\",\\"export BENCHMARK_FILL_FACTOR=90\\",\\"cd /home/ec2-user/benchmark/\\",\\"source /home/ec2-user/benchmark/postgres_writer_env.sh\\",\\"nohup /home/ec2-user/benchmark/benchmark_init.sh 2>&1 &\\"]}' --timeout-seconds 600 --cloud-watch-output-config '{\\"CloudWatchLogGroupName\\":\\"",
+            Object {
+              "Ref": "BenchmarkServiceLogGroupD6F7E1F0",
+            },
+            "\\",\\"CloudWatchOutputEnabled\\":true}'",
+          ],
+        ],
+      },
+    },
+    "PgbenchTx": Object {
+      "Value": Object {
+        "Fn::Join": Array [
+          "",
+          Array [
+            "aws ssm send-command --targets Key=tag:benchmark,Values=transaction_group --document-name \\"AWS-RunShellScript\\" --document-version \\"1\\" --parameters '{\\"workingDirectory\\":[\\"\\"],\\"executionTimeout\\":[\\"3600\\"],\\"commands\\":[\\"export STACK_NAME=test\\",\\"export BENCHMARK_CONNECTIONS=50\\",\\"export BENCHMARK_THREADS=24\\",\\"export BENCHMARK_PROGRESS=60\\",\\"export BENCHMARK_TIME=600\\",\\"cd /home/ec2-user/benchmark/\\",\\"source /home/ec2-user/benchmark/postgres_writer_env.sh\\",\\"nohup /home/ec2-user/benchmark/benchmark_default.sh 2>&1 &\\"]}' --timeout-seconds 600 --max-concurrency \\"50\\" --max-errors \\"0\\" --cloud-watch-output-config '{\\"CloudWatchLogGroupName\\":\\"",
+            Object {
+              "Ref": "BenchmarkServiceLogGroupD6F7E1F0",
+            },
+            "\\",\\"CloudWatchOutputEnabled\\":true}'",
+          ],
+        ],
+      },
+    },
+    "SsmStartSession": Object {
+      "Value": "aws ssm start-session --target $(aws autoscaling describe-auto-scaling-instances | jq -r '.AutoScalingInstances[] | select (.AutoScalingGroupName == \\"test-autoscaler-asg\\") | .InstanceId')",
+    },
+  },
+  "Parameters": Object {
+    "BootstrapVersion": Object {
+      "Default": "/cdk-bootstrap/hnb659fds/version",
+      "Description": "Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]",
+      "Type": "AWS::SSM::Parameter::Value<String>",
+    },
+    "SsmParameterValueawsserviceamiamazonlinuxlatestamzn2amihvmx8664gp2C96584B6F00A464EAD1953AFF4B05118Parameter": Object {
+      "Default": "/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2",
+      "Type": "AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>",
+    },
+  },
+  "Resources": Object {
+    "AWS679f53fac002430cb0da5b7982bd22872D164C4C": Object {
+      "DependsOn": Array [
+        "AWS679f53fac002430cb0da5b7982bd2287ServiceRoleC1EA0FF2",
+      ],
+      "Properties": Object {
+        "Code": Object {
+          "S3Bucket": Object {
+            "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
+          },
+          "S3Key": "39381d2c8b8ec42679de4960c24f0c83c56772cdc2b10b6fc14cd0a99aba42ed.zip",
+        },
+        "Handler": "index.handler",
+        "Role": Object {
+          "Fn::GetAtt": Array [
+            "AWS679f53fac002430cb0da5b7982bd2287ServiceRoleC1EA0FF2",
+            "Arn",
+          ],
+        },
+        "Runtime": "nodejs12.x",
+        "Timeout": 120,
+      },
+      "Type": "AWS::Lambda::Function",
+    },
+    "AWS679f53fac002430cb0da5b7982bd2287ServiceRoleC1EA0FF2": Object {
+      "Properties": Object {
+        "AssumeRolePolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": Object {
+                "Service": "lambda.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "ManagedPolicyArns": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:",
+                Object {
+                  "Ref": "AWS::Partition",
+                },
+                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+              ],
+            ],
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "BenchmarkServiceAuroraPostgresDatabaseClusterDD5B86C0": Object {
+      "DeletionPolicy": "Delete",
+      "Properties": Object {
+        "CopyTagsToSnapshot": true,
+        "DBClusterParameterGroupName": "default.aurora-postgresql12",
+        "DBSubnetGroupName": Object {
+          "Ref": "BenchmarkServiceAuroraPostgresDatabaseClusterSubnetsA4D791AE",
+        },
+        "DatabaseName": "postgres",
+        "Engine": "aurora-postgresql",
+        "EngineVersion": "12.8",
+        "KmsKeyId": Object {
+          "Fn::GetAtt": Array [
+            "BenchmarkServiceDBStorageEncryptionKeyB7C44211",
+            "Arn",
+          ],
+        },
+        "MasterUserPassword": Object {
+          "Fn::Join": Array [
+            "",
+            Array [
+              "{{resolve:secretsmanager:",
+              Object {
+                "Ref": "testBenchmarkServiceAuroraPostgresDatabaseClusterSecret7E21A2EF3fdaad7efa858a3daf9490cf0a702aeb",
+              },
+              ":SecretString:password::}}",
+            ],
+          ],
+        },
+        "MasterUsername": "benchmark",
+        "Port": 5432,
+        "StorageEncrypted": true,
+        "VpcSecurityGroupIds": Array [
+          Object {
+            "Fn::GetAtt": Array [
+              "BenchmarkServiceAuroraPostgresDatabaseClusterSecurityGroup944E1D9F",
+              "GroupId",
+            ],
+          },
+        ],
+      },
+      "Type": "AWS::RDS::DBCluster",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "BenchmarkServiceAuroraPostgresDatabaseClusterInstance169EA58DC": Object {
+      "DeletionPolicy": "Delete",
+      "Properties": Object {
+        "DBClusterIdentifier": Object {
+          "Ref": "BenchmarkServiceAuroraPostgresDatabaseClusterDD5B86C0",
+        },
+        "DBInstanceClass": "db.t4g.medium",
+        "DBSubnetGroupName": Object {
+          "Ref": "BenchmarkServiceAuroraPostgresDatabaseClusterSubnetsA4D791AE",
+        },
+        "EnablePerformanceInsights": true,
+        "Engine": "aurora-postgresql",
+        "EngineVersion": "12.8",
+        "PerformanceInsightsKMSKeyId": Object {
+          "Fn::GetAtt": Array [
+            "BenchmarkServiceDBPerformanceInsightEncryptionKey892D2812",
+            "Arn",
+          ],
+        },
+        "PerformanceInsightsRetentionPeriod": 7,
+        "PubliclyAccessible": false,
+      },
+      "Type": "AWS::RDS::DBInstance",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "BenchmarkServiceAuroraPostgresDatabaseClusterInstance2F3AFC2D0": Object {
+      "DeletionPolicy": "Delete",
+      "Properties": Object {
+        "DBClusterIdentifier": Object {
+          "Ref": "BenchmarkServiceAuroraPostgresDatabaseClusterDD5B86C0",
+        },
+        "DBInstanceClass": "db.t4g.medium",
+        "DBSubnetGroupName": Object {
+          "Ref": "BenchmarkServiceAuroraPostgresDatabaseClusterSubnetsA4D791AE",
+        },
+        "EnablePerformanceInsights": true,
+        "Engine": "aurora-postgresql",
+        "EngineVersion": "12.8",
+        "PerformanceInsightsKMSKeyId": Object {
+          "Fn::GetAtt": Array [
+            "BenchmarkServiceDBPerformanceInsightEncryptionKey892D2812",
+            "Arn",
+          ],
+        },
+        "PerformanceInsightsRetentionPeriod": 7,
+        "PubliclyAccessible": false,
+      },
+      "Type": "AWS::RDS::DBInstance",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "BenchmarkServiceAuroraPostgresDatabaseClusterSecretAttachmentA817D394": Object {
+      "Properties": Object {
+        "SecretId": Object {
+          "Ref": "testBenchmarkServiceAuroraPostgresDatabaseClusterSecret7E21A2EF3fdaad7efa858a3daf9490cf0a702aeb",
+        },
+        "TargetId": Object {
+          "Ref": "BenchmarkServiceAuroraPostgresDatabaseClusterDD5B86C0",
+        },
+        "TargetType": "AWS::RDS::DBCluster",
+      },
+      "Type": "AWS::SecretsManager::SecretTargetAttachment",
+    },
+    "BenchmarkServiceAuroraPostgresDatabaseClusterSecurityGroup944E1D9F": Object {
+      "Properties": Object {
+        "GroupDescription": "RDS security group",
+        "SecurityGroupEgress": Array [
+          Object {
+            "CidrIp": "0.0.0.0/0",
+            "Description": "Allow all outbound traffic by default",
+            "IpProtocol": "-1",
+          },
+        ],
+        "VpcId": Object {
+          "Ref": "Vpc8378EB38",
+        },
+      },
+      "Type": "AWS::EC2::SecurityGroup",
+    },
+    "BenchmarkServiceAuroraPostgresDatabaseClusterSecurityGroupfromtestBenchmarkServiceAutoscalerAutoscalerSecurityGroup7BA7F9CFIndirectPort4F530E88": Object {
+      "Properties": Object {
+        "Description": "from testBenchmarkServiceAutoscalerAutoscalerSecurityGroup7BA7F9CF:{IndirectPort}",
+        "FromPort": Object {
+          "Fn::GetAtt": Array [
+            "BenchmarkServiceAuroraPostgresDatabaseClusterDD5B86C0",
+            "Endpoint.Port",
+          ],
+        },
+        "GroupId": Object {
+          "Fn::GetAtt": Array [
+            "BenchmarkServiceAuroraPostgresDatabaseClusterSecurityGroup944E1D9F",
+            "GroupId",
+          ],
+        },
+        "IpProtocol": "tcp",
+        "SourceSecurityGroupId": Object {
+          "Fn::GetAtt": Array [
+            "BenchmarkServiceAutoscalerAutoscalerSecurityGroup3B06825E",
+            "GroupId",
+          ],
+        },
+        "ToPort": Object {
+          "Fn::GetAtt": Array [
+            "BenchmarkServiceAuroraPostgresDatabaseClusterDD5B86C0",
+            "Endpoint.Port",
+          ],
+        },
+      },
+      "Type": "AWS::EC2::SecurityGroupIngress",
+    },
+    "BenchmarkServiceAuroraPostgresDatabaseClusterSubnetsA4D791AE": Object {
+      "Properties": Object {
+        "DBSubnetGroupDescription": "Subnets for DatabaseCluster database",
+        "SubnetIds": Array [
+          Object {
+            "Ref": "VpcdatabaseSubnet1SubnetD53A427B",
+          },
+          Object {
+            "Ref": "VpcdatabaseSubnet2Subnet75663D63",
+          },
+        ],
+      },
+      "Type": "AWS::RDS::DBSubnetGroup",
+    },
+    "BenchmarkServiceAutoscalerAutoscalerLaunchTemplate820DF0DF": Object {
+      "Properties": Object {
+        "LaunchTemplateData": Object {
+          "IamInstanceProfile": Object {
+            "Arn": Object {
+              "Fn::GetAtt": Array [
+                "BenchmarkServiceAutoscalerAutoscalerLaunchTemplateProfileA892EE0B",
+                "Arn",
+              ],
+            },
+          },
+          "ImageId": Object {
+            "Ref": "SsmParameterValueawsserviceamiamazonlinuxlatestamzn2amihvmx8664gp2C96584B6F00A464EAD1953AFF4B05118Parameter",
+          },
+          "InstanceType": "t3.micro",
+          "SecurityGroupIds": Array [
+            Object {
+              "Fn::GetAtt": Array [
+                "BenchmarkServiceAutoscalerAutoscalerSecurityGroup3B06825E",
+                "GroupId",
+              ],
+            },
+          ],
+          "TagSpecifications": Array [
+            Object {
+              "ResourceType": "instance",
+              "Tags": Array [
+                Object {
+                  "Key": "Name",
+                  "Value": "test/BenchmarkService/Autoscaler/AutoscalerLaunchTemplate",
+                },
+              ],
+            },
+            Object {
+              "ResourceType": "volume",
+              "Tags": Array [
+                Object {
+                  "Key": "Name",
+                  "Value": "test/BenchmarkService/Autoscaler/AutoscalerLaunchTemplate",
+                },
+              ],
+            },
+          ],
+          "UserData": Object {
+            "Fn::Base64": Object {
+              "Fn::Join": Array [
+                "",
+                Array [
+                  "#!/bin/bash
+sudo yum install -y amazon-linux-extras
+sudo amazon-linux-extras enable postgresql12
+sudo yum clean metadata
+sudo amazon-linux-extras install postgresql12
+sudo yum install -y jq postgresql-contrib
+mkdir /home/ec2-user/benchmark
+cd /home/ec2-user/benchmark
+mkdir -p $(dirname '/home/ec2-user/benchmark/56f3fb20285b2b29508ebe2f0b8314909d098100b15eac0d692701d653ed65a7.zip')
+aws s3 cp 's3://",
+                  Object {
+                    "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
+                  },
+                  "/56f3fb20285b2b29508ebe2f0b8314909d098100b15eac0d692701d653ed65a7.zip' '/home/ec2-user/benchmark/56f3fb20285b2b29508ebe2f0b8314909d098100b15eac0d692701d653ed65a7.zip'
+aws configure set region ",
+                  Object {
+                    "Ref": "AWS::Region",
+                  },
+                  "
+cp -r /root/.aws /home/ec2-user/
+sudo chown -R ec2-user: /home/ec2-user/.aws
+unzip 56f3fb20285b2b29508ebe2f0b8314909d098100b15eac0d692701d653ed65a7.zip
+cp -f /home/ec2-user/benchmark/ulimits.conf /etc/security/limits.conf
+sudo chown -R ec2-user: /home/ec2-user/benchmark
+sudo chmod +x /home/ec2-user/benchmark/*.sh",
+                ],
+              ],
+            },
+          },
+        },
+      },
+      "Type": "AWS::EC2::LaunchTemplate",
+    },
+    "BenchmarkServiceAutoscalerAutoscalerLaunchTemplateProfileA892EE0B": Object {
+      "Properties": Object {
+        "Roles": Array [
+          Object {
+            "Ref": "BenchmarkServiceAutoscalerRoleAF8D0CDD",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::InstanceProfile",
+    },
+    "BenchmarkServiceAutoscalerAutoscalerSecurityGroup3B06825E": Object {
+      "Properties": Object {
+        "GroupDescription": "test/BenchmarkService/Autoscaler/AutoscalerSecurityGroup",
+        "SecurityGroupEgress": Array [
+          Object {
+            "CidrIp": "0.0.0.0/0",
+            "Description": "Allow all outbound traffic by default",
+            "IpProtocol": "-1",
+          },
+        ],
+        "VpcId": Object {
+          "Ref": "Vpc8378EB38",
+        },
+      },
+      "Type": "AWS::EC2::SecurityGroup",
+    },
+    "BenchmarkServiceAutoscalerDD67FE7A": Object {
+      "Properties": Object {
+        "AutoScalingGroupName": "test-autoscaler-asg",
+        "AvailabilityZones": Array [
+          Object {
+            "Fn::Select": Array [
+              0,
+              Object {
+                "Fn::GetAZs": "",
+              },
+            ],
+          },
+          Object {
+            "Fn::Select": Array [
+              1,
+              Object {
+                "Fn::GetAZs": "",
+              },
+            ],
+          },
+        ],
+        "DesiredCapacity": "1",
+        "MaxSize": "1",
+        "MinSize": "1",
+        "MixedInstancesPolicy": Object {
+          "InstancesDistribution": Object {
+            "OnDemandPercentageAboveBaseCapacity": 100,
+          },
+          "LaunchTemplate": Object {
+            "LaunchTemplateSpecification": Object {
+              "LaunchTemplateId": Object {
+                "Ref": "BenchmarkServiceAutoscalerAutoscalerLaunchTemplate820DF0DF",
+              },
+              "Version": Object {
+                "Fn::GetAtt": Array [
+                  "BenchmarkServiceAutoscalerAutoscalerLaunchTemplate820DF0DF",
+                  "LatestVersionNumber",
+                ],
+              },
+            },
+            "Overrides": Array [
+              Object {
+                "InstanceType": "t3.micro",
+              },
+            ],
+          },
+        },
+        "Tags": Array [
+          Object {
+            "Key": "benchmark",
+            "PropagateAtLaunch": true,
+            "Value": "transaction_group",
+          },
+        ],
+        "VPCZoneIdentifier": Array [],
+      },
+      "Type": "AWS::AutoScaling::AutoScalingGroup",
+    },
+    "BenchmarkServiceAutoscalerPolicy351DE57F": Object {
+      "Properties": Object {
+        "PolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": "cloudformation:DescribeStacks",
+              "Effect": "Allow",
+              "Resource": "*",
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "BenchmarkServiceAutoscalerPolicy351DE57F",
+        "Roles": Array [
+          Object {
+            "Ref": "BenchmarkServiceAutoscalerRoleAF8D0CDD",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "BenchmarkServiceAutoscalerRoleAF8D0CDD": Object {
+      "Properties": Object {
+        "AssumeRolePolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": Object {
+                "Service": Object {
+                  "Fn::Join": Array [
+                    "",
+                    Array [
+                      "ec2.",
+                      Object {
+                        "Ref": "AWS::URLSuffix",
+                      },
+                    ],
+                  ],
+                },
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "ManagedPolicyArns": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:",
+                Object {
+                  "Ref": "AWS::Partition",
+                },
+                ":iam::aws:policy/AmazonSSMManagedInstanceCore",
+              ],
+            ],
+          },
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:",
+                Object {
+                  "Ref": "AWS::Partition",
+                },
+                ":iam::aws:policy/CloudWatchAgentServerPolicy",
+              ],
+            ],
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "BenchmarkServiceAutoscalerRoleDefaultPolicy338718A2": Object {
+      "Properties": Object {
+        "PolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": Array [
+                "s3:GetObject*",
+                "s3:GetBucket*",
+                "s3:List*",
+              ],
+              "Effect": "Allow",
+              "Resource": Array [
+                Object {
+                  "Fn::Join": Array [
+                    "",
+                    Array [
+                      "arn:",
+                      Object {
+                        "Ref": "AWS::Partition",
+                      },
+                      ":s3:::",
+                      Object {
+                        "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
+                      },
+                    ],
+                  ],
+                },
+                Object {
+                  "Fn::Join": Array [
+                    "",
+                    Array [
+                      "arn:",
+                      Object {
+                        "Ref": "AWS::Partition",
+                      },
+                      ":s3:::",
+                      Object {
+                        "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
+                      },
+                      "/*",
+                    ],
+                  ],
+                },
+              ],
+            },
+            Object {
+              "Action": Array [
+                "secretsmanager:GetSecretValue",
+                "secretsmanager:DescribeSecret",
+              ],
+              "Effect": "Allow",
+              "Resource": Object {
+                "Ref": "BenchmarkServiceAuroraPostgresDatabaseClusterSecretAttachmentA817D394",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "BenchmarkServiceAutoscalerRoleDefaultPolicy338718A2",
+        "Roles": Array [
+          Object {
+            "Ref": "BenchmarkServiceAutoscalerRoleAF8D0CDD",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "BenchmarkServiceDBPerformanceInsightEncryptionKey892D2812": Object {
+      "DeletionPolicy": "Delete",
+      "Properties": Object {
+        "KeyPolicy": Object {
+          "Statement": Array [
+            Object {
+              "Action": "kms:*",
+              "Effect": "Allow",
+              "Principal": Object {
+                "AWS": Object {
+                  "Fn::Join": Array [
+                    "",
+                    Array [
+                      "arn:",
+                      Object {
+                        "Ref": "AWS::Partition",
+                      },
+                      ":iam::",
+                      Object {
+                        "Ref": "AWS::AccountId",
+                      },
+                      ":root",
+                    ],
+                  ],
+                },
+              },
+              "Resource": "*",
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+      },
+      "Type": "AWS::KMS::Key",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "BenchmarkServiceDBStorageEncryptionKeyB7C44211": Object {
+      "DeletionPolicy": "Delete",
+      "Properties": Object {
+        "KeyPolicy": Object {
+          "Statement": Array [
+            Object {
+              "Action": "kms:*",
+              "Effect": "Allow",
+              "Principal": Object {
+                "AWS": Object {
+                  "Fn::Join": Array [
+                    "",
+                    Array [
+                      "arn:",
+                      Object {
+                        "Ref": "AWS::Partition",
+                      },
+                      ":iam::",
+                      Object {
+                        "Ref": "AWS::AccountId",
+                      },
+                      ":root",
+                    ],
+                  ],
+                },
+              },
+              "Resource": "*",
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+      },
+      "Type": "AWS::KMS::Key",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "BenchmarkServiceGetDbClusterMembers0A0BF327": Object {
+      "DeletionPolicy": "Delete",
+      "DependsOn": Array [
+        "BenchmarkServiceGetDbClusterMembersCustomResourcePolicyA8CFDCB1",
+      ],
+      "Properties": Object {
+        "Create": Object {
+          "Fn::Join": Array [
+            "",
+            Array [
+              "{\\"service\\":\\"RDS\\",\\"action\\":\\"describeDBClusters\\",\\"parameters\\":{\\"DBClusterIdentifier\\":\\"",
+              Object {
+                "Ref": "BenchmarkServiceAuroraPostgresDatabaseClusterDD5B86C0",
+              },
+              "\\"},\\"physicalResourceId\\":{\\"id\\":\\"cr-",
+              Object {
+                "Ref": "BenchmarkServiceAuroraPostgresDatabaseClusterDD5B86C0",
+              },
+              "-cluster-members\\"}}",
+            ],
+          ],
+        },
+        "InstallLatestAwsSdk": true,
+        "ServiceToken": Object {
+          "Fn::GetAtt": Array [
+            "AWS679f53fac002430cb0da5b7982bd22872D164C4C",
+            "Arn",
+          ],
+        },
+      },
+      "Type": "Custom::AWS",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "BenchmarkServiceGetDbClusterMembersCustomResourcePolicyA8CFDCB1": Object {
+      "Properties": Object {
+        "PolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": "rds:DescribeDBClusters",
+              "Effect": "Allow",
+              "Resource": "*",
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "BenchmarkServiceGetDbClusterMembersCustomResourcePolicyA8CFDCB1",
+        "Roles": Array [
+          Object {
+            "Ref": "AWS679f53fac002430cb0da5b7982bd2287ServiceRoleC1EA0FF2",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "BenchmarkServiceGetWriterAZ526464F1": Object {
+      "DeletionPolicy": "Delete",
+      "DependsOn": Array [
+        "BenchmarkServiceGetWriterAZCustomResourcePolicy5BD3CED5",
+      ],
+      "Properties": Object {
+        "Create": Object {
+          "Fn::Join": Array [
+            "",
+            Array [
+              "{\\"service\\":\\"RDS\\",\\"action\\":\\"describeDBInstances\\",\\"parameters\\":{\\"DBInstanceIdentifier\\":\\"",
+              Object {
+                "Ref": "BenchmarkServiceAuroraPostgresDatabaseClusterInstance2F3AFC2D0",
+              },
+              "\\"},\\"physicalResourceId\\":{\\"id\\":\\"cr-",
+              Object {
+                "Ref": "BenchmarkServiceAuroraPostgresDatabaseClusterInstance2F3AFC2D0",
+              },
+              "\\"},\\"outputPaths\\":[\\"DBInstances.0.AvailabilityZone\\"]}",
+            ],
+          ],
+        },
+        "InstallLatestAwsSdk": true,
+        "ServiceToken": Object {
+          "Fn::GetAtt": Array [
+            "AWS679f53fac002430cb0da5b7982bd22872D164C4C",
+            "Arn",
+          ],
+        },
+      },
+      "Type": "Custom::AWS",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "BenchmarkServiceGetWriterAZCustomResourcePolicy5BD3CED5": Object {
+      "Properties": Object {
+        "PolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": "rds:DescribeDBInstances",
+              "Effect": "Allow",
+              "Resource": "*",
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "BenchmarkServiceGetWriterAZCustomResourcePolicy5BD3CED5",
+        "Roles": Array [
+          Object {
+            "Ref": "AWS679f53fac002430cb0da5b7982bd2287ServiceRoleC1EA0FF2",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "BenchmarkServiceLogGroupD6F7E1F0": Object {
+      "DeletionPolicy": "Delete",
+      "Properties": Object {
+        "RetentionInDays": 731,
+      },
+      "Type": "AWS::Logs::LogGroup",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "Vpc8378EB38": Object {
+      "Properties": Object {
+        "CidrBlock": "10.0.0.0/16",
+        "EnableDnsHostnames": true,
+        "EnableDnsSupport": true,
+        "InstanceTenancy": "default",
+        "Tags": Array [
+          Object {
+            "Key": "Name",
+            "Value": "benchmark-db-vpc",
+          },
+        ],
+      },
+      "Type": "AWS::EC2::VPC",
+    },
+    "VpcIGWD7BA715C": Object {
+      "Properties": Object {
+        "Tags": Array [
+          Object {
+            "Key": "Name",
+            "Value": "benchmark-db-vpc",
+          },
+        ],
+      },
+      "Type": "AWS::EC2::InternetGateway",
+    },
+    "VpcVPCGWBF912B6E": Object {
+      "Properties": Object {
+        "InternetGatewayId": Object {
+          "Ref": "VpcIGWD7BA715C",
+        },
+        "VpcId": Object {
+          "Ref": "Vpc8378EB38",
+        },
+      },
+      "Type": "AWS::EC2::VPCGatewayAttachment",
+    },
+    "VpcapplicationSubnet1DefaultRouteD1F37131": Object {
+      "Properties": Object {
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "NatGatewayId": Object {
+          "Ref": "VpcingressSubnet1NATGateway5ADD866D",
+        },
+        "RouteTableId": Object {
+          "Ref": "VpcapplicationSubnet1RouteTableF03E8296",
+        },
+      },
+      "Type": "AWS::EC2::Route",
+    },
+    "VpcapplicationSubnet1RouteTableAssociation75D5245D": Object {
+      "Properties": Object {
+        "RouteTableId": Object {
+          "Ref": "VpcapplicationSubnet1RouteTableF03E8296",
+        },
+        "SubnetId": Object {
+          "Ref": "VpcapplicationSubnet1Subnet8B68205B",
+        },
+      },
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+    },
+    "VpcapplicationSubnet1RouteTableF03E8296": Object {
+      "Properties": Object {
+        "Tags": Array [
+          Object {
+            "Key": "Name",
+            "Value": "test/Vpc/applicationSubnet1",
+          },
+        ],
+        "VpcId": Object {
+          "Ref": "Vpc8378EB38",
+        },
+      },
+      "Type": "AWS::EC2::RouteTable",
+    },
+    "VpcapplicationSubnet1Subnet8B68205B": Object {
+      "Properties": Object {
+        "AvailabilityZone": Object {
+          "Fn::Select": Array [
+            0,
+            Object {
+              "Fn::GetAZs": "",
+            },
+          ],
+        },
+        "CidrBlock": "10.0.2.0/24",
+        "MapPublicIpOnLaunch": false,
+        "Tags": Array [
+          Object {
+            "Key": "aws-cdk:subnet-name",
+            "Value": "application",
+          },
+          Object {
+            "Key": "aws-cdk:subnet-type",
+            "Value": "Private",
+          },
+          Object {
+            "Key": "Name",
+            "Value": "test/Vpc/applicationSubnet1",
+          },
+        ],
+        "VpcId": Object {
+          "Ref": "Vpc8378EB38",
+        },
+      },
+      "Type": "AWS::EC2::Subnet",
+    },
+    "VpcapplicationSubnet2DefaultRoute928D347B": Object {
+      "Properties": Object {
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "NatGatewayId": Object {
+          "Ref": "VpcingressSubnet1NATGateway5ADD866D",
+        },
+        "RouteTableId": Object {
+          "Ref": "VpcapplicationSubnet2RouteTable17378AED",
+        },
+      },
+      "Type": "AWS::EC2::Route",
+    },
+    "VpcapplicationSubnet2RouteTable17378AED": Object {
+      "Properties": Object {
+        "Tags": Array [
+          Object {
+            "Key": "Name",
+            "Value": "test/Vpc/applicationSubnet2",
+          },
+        ],
+        "VpcId": Object {
+          "Ref": "Vpc8378EB38",
+        },
+      },
+      "Type": "AWS::EC2::RouteTable",
+    },
+    "VpcapplicationSubnet2RouteTableAssociationF25110CC": Object {
+      "Properties": Object {
+        "RouteTableId": Object {
+          "Ref": "VpcapplicationSubnet2RouteTable17378AED",
+        },
+        "SubnetId": Object {
+          "Ref": "VpcapplicationSubnet2Subnet29670962",
+        },
+      },
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+    },
+    "VpcapplicationSubnet2Subnet29670962": Object {
+      "Properties": Object {
+        "AvailabilityZone": Object {
+          "Fn::Select": Array [
+            1,
+            Object {
+              "Fn::GetAZs": "",
+            },
+          ],
+        },
+        "CidrBlock": "10.0.3.0/24",
+        "MapPublicIpOnLaunch": false,
+        "Tags": Array [
+          Object {
+            "Key": "aws-cdk:subnet-name",
+            "Value": "application",
+          },
+          Object {
+            "Key": "aws-cdk:subnet-type",
+            "Value": "Private",
+          },
+          Object {
+            "Key": "Name",
+            "Value": "test/Vpc/applicationSubnet2",
+          },
+        ],
+        "VpcId": Object {
+          "Ref": "Vpc8378EB38",
+        },
+      },
+      "Type": "AWS::EC2::Subnet",
+    },
+    "VpcdatabaseSubnet1RouteTableAssociationEE6CA36B": Object {
+      "Properties": Object {
+        "RouteTableId": Object {
+          "Ref": "VpcdatabaseSubnet1RouteTableF3B572E4",
+        },
+        "SubnetId": Object {
+          "Ref": "VpcdatabaseSubnet1SubnetD53A427B",
+        },
+      },
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+    },
+    "VpcdatabaseSubnet1RouteTableF3B572E4": Object {
+      "Properties": Object {
+        "Tags": Array [
+          Object {
+            "Key": "Name",
+            "Value": "test/Vpc/databaseSubnet1",
+          },
+        ],
+        "VpcId": Object {
+          "Ref": "Vpc8378EB38",
+        },
+      },
+      "Type": "AWS::EC2::RouteTable",
+    },
+    "VpcdatabaseSubnet1SubnetD53A427B": Object {
+      "Properties": Object {
+        "AvailabilityZone": Object {
+          "Fn::Select": Array [
+            0,
+            Object {
+              "Fn::GetAZs": "",
+            },
+          ],
+        },
+        "CidrBlock": "10.0.4.0/24",
+        "MapPublicIpOnLaunch": false,
+        "Tags": Array [
+          Object {
+            "Key": "aws-cdk:subnet-name",
+            "Value": "database",
+          },
+          Object {
+            "Key": "aws-cdk:subnet-type",
+            "Value": "Isolated",
+          },
+          Object {
+            "Key": "Name",
+            "Value": "test/Vpc/databaseSubnet1",
+          },
+        ],
+        "VpcId": Object {
+          "Ref": "Vpc8378EB38",
+        },
+      },
+      "Type": "AWS::EC2::Subnet",
+    },
+    "VpcdatabaseSubnet2RouteTable1E50BD8E": Object {
+      "Properties": Object {
+        "Tags": Array [
+          Object {
+            "Key": "Name",
+            "Value": "test/Vpc/databaseSubnet2",
+          },
+        ],
+        "VpcId": Object {
+          "Ref": "Vpc8378EB38",
+        },
+      },
+      "Type": "AWS::EC2::RouteTable",
+    },
+    "VpcdatabaseSubnet2RouteTableAssociationCADBAF9A": Object {
+      "Properties": Object {
+        "RouteTableId": Object {
+          "Ref": "VpcdatabaseSubnet2RouteTable1E50BD8E",
+        },
+        "SubnetId": Object {
+          "Ref": "VpcdatabaseSubnet2Subnet75663D63",
+        },
+      },
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+    },
+    "VpcdatabaseSubnet2Subnet75663D63": Object {
+      "Properties": Object {
+        "AvailabilityZone": Object {
+          "Fn::Select": Array [
+            1,
+            Object {
+              "Fn::GetAZs": "",
+            },
+          ],
+        },
+        "CidrBlock": "10.0.5.0/24",
+        "MapPublicIpOnLaunch": false,
+        "Tags": Array [
+          Object {
+            "Key": "aws-cdk:subnet-name",
+            "Value": "database",
+          },
+          Object {
+            "Key": "aws-cdk:subnet-type",
+            "Value": "Isolated",
+          },
+          Object {
+            "Key": "Name",
+            "Value": "test/Vpc/databaseSubnet2",
+          },
+        ],
+        "VpcId": Object {
+          "Ref": "Vpc8378EB38",
+        },
+      },
+      "Type": "AWS::EC2::Subnet",
+    },
+    "VpcingressSubnet1DefaultRoute4188A546": Object {
+      "DependsOn": Array [
+        "VpcVPCGWBF912B6E",
+      ],
+      "Properties": Object {
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "GatewayId": Object {
+          "Ref": "VpcIGWD7BA715C",
+        },
+        "RouteTableId": Object {
+          "Ref": "VpcingressSubnet1RouteTable804C7A26",
+        },
+      },
+      "Type": "AWS::EC2::Route",
+    },
+    "VpcingressSubnet1EIPD1FA297B": Object {
+      "Properties": Object {
+        "Domain": "vpc",
+        "Tags": Array [
+          Object {
+            "Key": "Name",
+            "Value": "test/Vpc/ingressSubnet1",
+          },
+        ],
+      },
+      "Type": "AWS::EC2::EIP",
+    },
+    "VpcingressSubnet1NATGateway5ADD866D": Object {
+      "Properties": Object {
+        "AllocationId": Object {
+          "Fn::GetAtt": Array [
+            "VpcingressSubnet1EIPD1FA297B",
+            "AllocationId",
+          ],
+        },
+        "SubnetId": Object {
+          "Ref": "VpcingressSubnet1Subnet059F22C6",
+        },
+        "Tags": Array [
+          Object {
+            "Key": "Name",
+            "Value": "test/Vpc/ingressSubnet1",
+          },
+        ],
+      },
+      "Type": "AWS::EC2::NatGateway",
+    },
+    "VpcingressSubnet1RouteTable804C7A26": Object {
+      "Properties": Object {
+        "Tags": Array [
+          Object {
+            "Key": "Name",
+            "Value": "test/Vpc/ingressSubnet1",
+          },
+        ],
+        "VpcId": Object {
+          "Ref": "Vpc8378EB38",
+        },
+      },
+      "Type": "AWS::EC2::RouteTable",
+    },
+    "VpcingressSubnet1RouteTableAssociation5DF54E70": Object {
+      "Properties": Object {
+        "RouteTableId": Object {
+          "Ref": "VpcingressSubnet1RouteTable804C7A26",
+        },
+        "SubnetId": Object {
+          "Ref": "VpcingressSubnet1Subnet059F22C6",
+        },
+      },
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+    },
+    "VpcingressSubnet1Subnet059F22C6": Object {
+      "Properties": Object {
+        "AvailabilityZone": Object {
+          "Fn::Select": Array [
+            0,
+            Object {
+              "Fn::GetAZs": "",
+            },
+          ],
+        },
+        "CidrBlock": "10.0.0.0/24",
+        "MapPublicIpOnLaunch": true,
+        "Tags": Array [
+          Object {
+            "Key": "aws-cdk:subnet-name",
+            "Value": "ingress",
+          },
+          Object {
+            "Key": "aws-cdk:subnet-type",
+            "Value": "Public",
+          },
+          Object {
+            "Key": "Name",
+            "Value": "test/Vpc/ingressSubnet1",
+          },
+        ],
+        "VpcId": Object {
+          "Ref": "Vpc8378EB38",
+        },
+      },
+      "Type": "AWS::EC2::Subnet",
+    },
+    "VpcingressSubnet2DefaultRoute18203BC3": Object {
+      "DependsOn": Array [
+        "VpcVPCGWBF912B6E",
+      ],
+      "Properties": Object {
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "GatewayId": Object {
+          "Ref": "VpcIGWD7BA715C",
+        },
+        "RouteTableId": Object {
+          "Ref": "VpcingressSubnet2RouteTable8B0E23A7",
+        },
+      },
+      "Type": "AWS::EC2::Route",
+    },
+    "VpcingressSubnet2RouteTable8B0E23A7": Object {
+      "Properties": Object {
+        "Tags": Array [
+          Object {
+            "Key": "Name",
+            "Value": "test/Vpc/ingressSubnet2",
+          },
+        ],
+        "VpcId": Object {
+          "Ref": "Vpc8378EB38",
+        },
+      },
+      "Type": "AWS::EC2::RouteTable",
+    },
+    "VpcingressSubnet2RouteTableAssociation39E1BA3A": Object {
+      "Properties": Object {
+        "RouteTableId": Object {
+          "Ref": "VpcingressSubnet2RouteTable8B0E23A7",
+        },
+        "SubnetId": Object {
+          "Ref": "VpcingressSubnet2SubnetF175D754",
+        },
+      },
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+    },
+    "VpcingressSubnet2SubnetF175D754": Object {
+      "Properties": Object {
+        "AvailabilityZone": Object {
+          "Fn::Select": Array [
+            1,
+            Object {
+              "Fn::GetAZs": "",
+            },
+          ],
+        },
+        "CidrBlock": "10.0.1.0/24",
+        "MapPublicIpOnLaunch": true,
+        "Tags": Array [
+          Object {
+            "Key": "aws-cdk:subnet-name",
+            "Value": "ingress",
+          },
+          Object {
+            "Key": "aws-cdk:subnet-type",
+            "Value": "Public",
+          },
+          Object {
+            "Key": "Name",
+            "Value": "test/Vpc/ingressSubnet2",
+          },
+        ],
+        "VpcId": Object {
+          "Ref": "Vpc8378EB38",
+        },
+      },
+      "Type": "AWS::EC2::Subnet",
+    },
+    "testBenchmarkServiceAuroraPostgresDatabaseClusterSecret7E21A2EF3fdaad7efa858a3daf9490cf0a702aeb": Object {
+      "DeletionPolicy": "Delete",
+      "Properties": Object {
+        "Description": Object {
+          "Fn::Join": Array [
+            "",
+            Array [
+              "Generated by the CDK for stack: ",
+              Object {
+                "Ref": "AWS::StackName",
+              },
+            ],
+          ],
+        },
+        "GenerateSecretString": Object {
+          "ExcludeCharacters": " %+~\`#$&*()|[]{}:;<>?!'/@\\"\\\\",
+          "GenerateStringKey": "password",
+          "PasswordLength": 30,
+          "SecretStringTemplate": "{\\"username\\":\\"benchmark\\"}",
+        },
+      },
+      "Type": "AWS::SecretsManager::Secret",
+      "UpdateReplacePolicy": "Delete",
+    },
+  },
+  "Rules": Object {
+    "CheckBootstrapVersion": Object {
+      "Assertions": Array [
+        Object {
+          "Assert": Object {
+            "Fn::Not": Array [
+              Object {
+                "Fn::Contains": Array [
+                  Array [
+                    "1",
+                    "2",
+                    "3",
+                    "4",
+                    "5",
+                  ],
+                  Object {
+                    "Ref": "BootstrapVersion",
+                  },
+                ],
+              },
+            ],
+          },
+          "AssertDescription": "CDK bootstrap stack version 6 required. Please run 'cdk bootstrap' with a recent version of the CDK CLI.",
+        },
+      ],
+    },
+  },
+}
+`;
