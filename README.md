@@ -23,7 +23,7 @@ scripts/run_cmd.sh PgbenchTx
 ```
 
 ## Architecture
-![Architecture](./assets/aurora-benchmark-stack.png)
+![Architecture](./architecture/aurora-benchmark-stack.png)
 
 # Reference
 * [Automate benchmark tests for Amazon Aurora PostgreSQL](https://aws.amazon.com/blogs/database/automate-benchmark-tests-for-amazon-aurora-postgresql/)
