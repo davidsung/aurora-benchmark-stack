@@ -6,6 +6,7 @@ import * as rds from 'aws-cdk-lib/aws-rds';
 import * as cr from 'aws-cdk-lib/custom-resources';
 import { Construct } from 'constructs';
 import { AuroraPostgresCluster } from './aurora-pg';
+import { AuroraWriterAZCustomResource } from './aurora-writer-az-custom-resource';
 import { Autoscaler } from './autoscaler';
 import { RdsPostgresInstance } from './rds-pg';
 
@@ -143,7 +144,117 @@ export class BenchmarkService extends Construct {
       }
       this.username = this.auroraPostgres.username;
       this.dbSecretName = this.auroraPostgres.secret?.secretName;
-      this.dbWriterAZ = this.getClusterWriterAvailabilityZone(this.auroraPostgres.clusterIdentifier, this.auroraPostgres.instanceIdentifiers);
+
+      const auroraWriterAZ = new AuroraWriterAZCustomResource(this, 'AuroraWriterAZ', {
+        clusterIdentifier: this.auroraPostgres.clusterIdentifier,
+      });
+      this.dbWriterAZ = auroraWriterAZ.customResource.getAttString('AvailabilityZone');
+
+      const { subnetIds } = props.vpc.selectSubnets({
+        availabilityZones: [auroraWriterAZ.customResource.getAttString('AvailabilityZone')],
+        subnetType: ec2.SubnetType.PRIVATE_WITH_NAT,
+      });
+      const autoscaler = new Autoscaler(this, 'Autoscaler', {
+        vpc: props.vpc,
+        availabilityZones: [auroraWriterAZ.customResource.getAttString('AvailabilityZone')],
+        subnetIds: subnetIds,
+        azCustomResource: auroraWriterAZ.customResource,
+        instanceType: props.computeInstanceType,
+        asgName: props.computeAsgName,
+        minSize: props.computeMinSize,
+        maxSize: props.computeMaxSize,
+        desiredCapacity: props.computeDesiredCapacity,
+        onDemandPercentageAboveBaseCapacity: this.computeOnDemandPercentageAboveBaseCapacity,
+        tags: props.computeTags,
+      });
+      autoscaler.node.addDependency(auroraWriterAZ.customResource);
+      this.asgName = autoscaler.asgName;
+
+      this.auroraPostgres.grantAccess(autoscaler);
+
+      const logGroup = new logs.LogGroup(this, 'LogGroup', {
+        logGroupName: props.computeLogGroupName,
+        removalPolicy: RemovalPolicy.DESTROY,
+      });
+      this.logGroupName = logGroup.logGroupName;
+      this.logGroupArn = logGroup.logGroupArn;
+
+      const initDocumentParameters = {
+        workingDirectory: [''],
+        executionTimeout: ['3600'],
+        commands: [
+          `export STACK_NAME=${Stack.of(this).stackName}`,
+          `export BENCHMARK_SCALE_FACTOR=${this.pgBenchScaleFactor}`,
+          `export BENCHMARK_FILL_FACTOR=${this.pgBenchFillFactor}`,
+          'cd /home/ec2-user/benchmark/',
+          'source /home/ec2-user/benchmark/postgres_writer_env.sh',
+          'nohup /home/ec2-user/benchmark/benchmark_init.sh 2>&1 &',
+        ],
+      };
+
+      this.pgInitDocument = `aws ssm send-command --targets \
+  --instance-ids $(aws autoscaling describe-auto-scaling-groups --auto-scaling-group-names ${this.asgName} | jq -r ".AutoScalingGroups[].Instances | first .InstanceId") \
+  --document-name "AWS-RunShellScript" \
+  --document-version "1" \
+  --parameters '${JSON.stringify(initDocumentParameters)}' \
+  --timeout-seconds 600 \
+  --cloud-watch-output-config '{"CloudWatchLogGroupName":"${this.logGroupName}","CloudWatchOutputEnabled":true}'`;
+
+      const targets = Object.keys(autoscaler.tags).map((k) => (
+        `Key=tag:${k},Values=${autoscaler.tags[k]}`
+      )).join(' ');
+
+      const defaultExecDocumentParameters = {
+        workingDirectory: [''],
+        executionTimeout: ['3600'],
+        commands: [
+          `export STACK_NAME=${Stack.of(this).stackName}`,
+          `export BENCHMARK_CONNECTIONS=${this.pgBenchConnections}`,
+          `export BENCHMARK_THREADS=${this.pgBenchThreads}`,
+          `export BENCHMARK_PROGRESS=${this.pgBenchProgress}`,
+          `export BENCHMARK_TIME=${this.pgBenchTime}`,
+          'cd /home/ec2-user/benchmark/',
+          'source /home/ec2-user/benchmark/postgres_writer_env.sh',
+          'nohup /home/ec2-user/benchmark/benchmark_default.sh 2>&1 &',
+        ],
+      };
+
+      this.pgbenchTxDocument = `aws ssm send-command --targets ${targets} \
+  --document-name "AWS-RunShellScript" \
+  --document-version "1" \
+  --parameters '${JSON.stringify(defaultExecDocumentParameters)}' \
+  --timeout-seconds ${this.pgBenchTime} \
+  --max-concurrency "50" \
+  --max-errors "0" \
+  --cloud-watch-output-config '{"CloudWatchLogGroupName":"${this.logGroupName}","CloudWatchOutputEnabled":true}'`;
+
+      if (props.pgBenchSql) {
+        const execDocumentParameters = {
+          workingDirectory: [''],
+          executionTimeout: ['3600'],
+          commands: [
+            `export STACK_NAME=${Stack.of(this).stackName}`,
+            `export BENCHMARK_CONNECTIONS=${this.pgBenchConnections}`,
+            `export BENCHMARK_THREADS=${this.pgBenchThreads}`,
+            `export BENCHMARK_PROGRESS=${this.pgBenchProgress}`,
+            `export BENCHMARK_TIME=${this.pgBenchTime}`,
+            `export BENCHMARK_SQL_FILE=${props.pgBenchSql}`,
+            'cd /home/ec2-user/benchmark/',
+            'source /home/ec2-user/benchmark/postgres_env.sh',
+            'nohup /home/ec2-user/benchmark/benchmark_custom.sh 2>&1 &',
+          ],
+        };
+
+        this.customTxDocument = `aws ssm send-command --targets ${targets} \
+    --document-name "AWS-RunShellScript" \
+    --document-version "1" \
+    --parameters '${JSON.stringify(execDocumentParameters)}' \
+    --timeout-seconds ${this.pgBenchTime} \
+    --max-concurrency "50" \
+    --max-errors "0" \
+    --cloud-watch-output-config '{"CloudWatchLogGroupName":"${this.logGroupName}","CloudWatchOutputEnabled":true}'`;
+      }
+
     } else if (props.dbEngineVersion instanceof rds.PostgresEngineVersion) {
       this.rdsPostgres = new RdsPostgresInstance(this, 'RDSPostgres', {
         vpc: props.vpc,
@@ -173,149 +284,228 @@ export class BenchmarkService extends Construct {
       }
       this.username = this.rdsPostgres.username;
       this.dbSecretName = this.rdsPostgres.secret?.secretName;
+
+      //     const autoscaler = new Autoscaler(this, 'Autoscaler', {
+      //       vpc: props.vpc,
+      //       vpcSubnets: {
+      //         subnetType: ec2.SubnetType.PRIVATE_WITH_NAT,
+      //         availabilityZones: [this.dbWriterAZ!],
+      //       },
+      //       instanceType: props.computeInstanceType,
+      //       asgName: props.computeAsgName,
+      //       minSize: props.computeMinSize,
+      //       maxSize: props.computeMaxSize,
+      //       desiredCapacity: props.computeDesiredCapacity,
+      //       onDemandPercentageAboveBaseCapacity: this.computeOnDemandPercentageAboveBaseCapacity,
+      //       tags: props.computeTags,
+      //     });
+      //     this.asgName = autoscaler.asgName;
+
+      //     this.rdsPostgres.grantAccess(autoscaler);
+
+      const logGroup = new logs.LogGroup(this, 'LogGroup', {
+        logGroupName: props.computeLogGroupName,
+        removalPolicy: RemovalPolicy.DESTROY,
+      });
+      this.logGroupName = logGroup.logGroupName;
+      this.logGroupArn = logGroup.logGroupArn;
+
+      //     const initDocumentParameters = {
+      //       workingDirectory: [''],
+      //       executionTimeout: ['3600'],
+      //       commands: [
+      //         `export STACK_NAME=${Stack.of(this).stackName}`,
+      //         `export BENCHMARK_SCALE_FACTOR=${this.pgBenchScaleFactor}`,
+      //         `export BENCHMARK_FILL_FACTOR=${this.pgBenchFillFactor}`,
+      //         'cd /home/ec2-user/benchmark/',
+      //         'source /home/ec2-user/benchmark/postgres_writer_env.sh',
+      //         'nohup /home/ec2-user/benchmark/benchmark_init.sh 2>&1 &',
+      //       ],
+      //     };
+
+      //     this.pgInitDocument = `aws ssm send-command --targets \
+      // --instance-ids $(aws autoscaling describe-auto-scaling-groups --auto-scaling-group-names ${this.asgName} | jq -r ".AutoScalingGroups[].Instances | first .InstanceId") \
+      // --document-name "AWS-RunShellScript" \
+      // --document-version "1" \
+      // --parameters '${JSON.stringify(initDocumentParameters)}' \
+      // --timeout-seconds 600 \
+      // --cloud-watch-output-config '{"CloudWatchLogGroupName":"${this.logGroupName}","CloudWatchOutputEnabled":true}'`;
+
+      //     const targets = Object.keys(autoscaler.tags).map((k) => (
+      //       `Key=tag:${k},Values=${autoscaler.tags[k]}`
+      //     )).join(' ');
+
+      //     const defaultExecDocumentParameters = {
+      //       workingDirectory: [''],
+      //       executionTimeout: ['3600'],
+      //       commands: [
+      //         `export STACK_NAME=${Stack.of(this).stackName}`,
+      //         `export BENCHMARK_CONNECTIONS=${this.pgBenchConnections}`,
+      //         `export BENCHMARK_THREADS=${this.pgBenchThreads}`,
+      //         `export BENCHMARK_PROGRESS=${this.pgBenchProgress}`,
+      //         `export BENCHMARK_TIME=${this.pgBenchTime}`,
+      //         'cd /home/ec2-user/benchmark/',
+      //         'source /home/ec2-user/benchmark/postgres_writer_env.sh',
+      //         'nohup /home/ec2-user/benchmark/benchmark_default.sh 2>&1 &',
+      //       ],
+      //     };
+
+      //     this.pgbenchTxDocument = `aws ssm send-command --targets ${targets} \
+      // --document-name "AWS-RunShellScript" \
+      // --document-version "1" \
+      // --parameters '${JSON.stringify(defaultExecDocumentParameters)}' \
+      // --timeout-seconds ${this.pgBenchTime} \
+      // --max-concurrency "50" \
+      // --max-errors "0" \
+      // --cloud-watch-output-config '{"CloudWatchLogGroupName":"${this.logGroupName}","CloudWatchOutputEnabled":true}'`;
+
+      //     if (props.pgBenchSql) {
+      //       const execDocumentParameters = {
+      //         workingDirectory: [''],
+      //         executionTimeout: ['3600'],
+      //         commands: [
+      //           `export STACK_NAME=${Stack.of(this).stackName}`,
+      //           `export BENCHMARK_CONNECTIONS=${this.pgBenchConnections}`,
+      //           `export BENCHMARK_THREADS=${this.pgBenchThreads}`,
+      //           `export BENCHMARK_PROGRESS=${this.pgBenchProgress}`,
+      //           `export BENCHMARK_TIME=${this.pgBenchTime}`,
+      //           `export BENCHMARK_SQL_FILE=${props.pgBenchSql}`,
+      //           'cd /home/ec2-user/benchmark/',
+      //           'source /home/ec2-user/benchmark/postgres_env.sh',
+      //           'nohup /home/ec2-user/benchmark/benchmark_custom.sh 2>&1 &',
+      //         ],
+      //       };
+
+      //       this.customTxDocument = `aws ssm send-command --targets ${targets} \
+      //   --document-name "AWS-RunShellScript" \
+      //   --document-version "1" \
+      //   --parameters '${JSON.stringify(execDocumentParameters)}' \
+      //   --timeout-seconds ${this.pgBenchTime} \
+      //   --max-concurrency "50" \
+      //   --max-errors "0" \
+      //   --cloud-watch-output-config '{"CloudWatchLogGroupName":"${this.logGroupName}","CloudWatchOutputEnabled":true}'`;
+      //     }
     } else {
       throw new Error('dbEngineVersion must be either instance of AuroraPostgresEngineVersion or PostgresEngineVersion');
     }
 
-    const autoscaler = new Autoscaler(this, 'Autoscaler', {
-      vpc: props.vpc,
-      ...this.dbWriterAZ && {
-        vpcSubnets: {
-          subnetType: ec2.SubnetType.PRIVATE_WITH_NAT,
-          availabilityZones: [this.dbWriterAZ],
-        },
-      },
-      instanceType: props.computeInstanceType,
-      asgName: props.computeAsgName,
-      minSize: props.computeMinSize,
-      maxSize: props.computeMaxSize,
-      desiredCapacity: props.computeDesiredCapacity,
-      onDemandPercentageAboveBaseCapacity: this.computeOnDemandPercentageAboveBaseCapacity,
-      tags: props.computeTags,
-    });
-    this.asgName = autoscaler.asgName;
-
-    if (this.auroraPostgres) {
-      this.auroraPostgres.grantAccess(autoscaler);
-    }
-
-    if (this.rdsPostgres) {
-      this.rdsPostgres.grantAccess(autoscaler);
-    }
-
-    const logGroup = new logs.LogGroup(this, 'LogGroup', {
-      logGroupName: props.computeLogGroupName,
-      removalPolicy: RemovalPolicy.DESTROY,
-    });
-    this.logGroupName = logGroup.logGroupName;
-    this.logGroupArn = logGroup.logGroupArn;
-
-    const initDocumentParameters = {
-      workingDirectory: [''],
-      executionTimeout: ['3600'],
-      commands: [
-        `export STACK_NAME=${Stack.of(this).stackName}`,
-        `export BENCHMARK_SCALE_FACTOR=${this.pgBenchScaleFactor}`,
-        `export BENCHMARK_FILL_FACTOR=${this.pgBenchFillFactor}`,
-        'cd /home/ec2-user/benchmark/',
-        'source /home/ec2-user/benchmark/postgres_writer_env.sh',
-        'nohup /home/ec2-user/benchmark/benchmark_init.sh 2>&1 &',
-      ],
-    };
-
-    this.pgInitDocument = `aws ssm send-command --targets \
---instance-ids $(aws autoscaling describe-auto-scaling-groups --auto-scaling-group-names ${this.asgName} | jq -r ".AutoScalingGroups[].Instances | first .InstanceId") \
---document-name "AWS-RunShellScript" \
---document-version "1" \
---parameters '${JSON.stringify(initDocumentParameters)}' \
---timeout-seconds 600 \
---cloud-watch-output-config '{"CloudWatchLogGroupName":"${this.logGroupName}","CloudWatchOutputEnabled":true}'`;
-
-    const targets = Object.keys(autoscaler.tags).map((k) => (
-      `Key=tag:${k},Values=${autoscaler.tags[k]}`
-    )).join(' ');
-
-    const defaultExecDocumentParameters = {
-      workingDirectory: [''],
-      executionTimeout: ['3600'],
-      commands: [
-        `export STACK_NAME=${Stack.of(this).stackName}`,
-        `export BENCHMARK_CONNECTIONS=${this.pgBenchConnections}`,
-        `export BENCHMARK_THREADS=${this.pgBenchThreads}`,
-        `export BENCHMARK_PROGRESS=${this.pgBenchProgress}`,
-        `export BENCHMARK_TIME=${this.pgBenchTime}`,
-        'cd /home/ec2-user/benchmark/',
-        'source /home/ec2-user/benchmark/postgres_writer_env.sh',
-        'nohup /home/ec2-user/benchmark/benchmark_default.sh 2>&1 &',
-      ],
-    };
-
-    this.pgbenchTxDocument = `aws ssm send-command --targets ${targets} \
---document-name "AWS-RunShellScript" \
---document-version "1" \
---parameters '${JSON.stringify(defaultExecDocumentParameters)}' \
---timeout-seconds ${this.pgBenchTime} \
---max-concurrency "50" \
---max-errors "0" \
---cloud-watch-output-config '{"CloudWatchLogGroupName":"${this.logGroupName}","CloudWatchOutputEnabled":true}'`;
-
-    if (props.pgBenchSql) {
-      const execDocumentParameters = {
-        workingDirectory: [''],
-        executionTimeout: ['3600'],
-        commands: [
-          `export STACK_NAME=${Stack.of(this).stackName}`,
-          `export BENCHMARK_CONNECTIONS=${this.pgBenchConnections}`,
-          `export BENCHMARK_THREADS=${this.pgBenchThreads}`,
-          `export BENCHMARK_PROGRESS=${this.pgBenchProgress}`,
-          `export BENCHMARK_TIME=${this.pgBenchTime}`,
-          `export BENCHMARK_SQL_FILE=${props.pgBenchSql}`,
-          'cd /home/ec2-user/benchmark/',
-          'source /home/ec2-user/benchmark/postgres_env.sh',
-          'nohup /home/ec2-user/benchmark/benchmark_custom.sh 2>&1 &',
-        ],
-      };
-
-      this.customTxDocument = `aws ssm send-command --targets ${targets} \
-  --document-name "AWS-RunShellScript" \
-  --document-version "1" \
-  --parameters '${JSON.stringify(execDocumentParameters)}' \
-  --timeout-seconds ${this.pgBenchTime} \
-  --max-concurrency "50" \
-  --max-errors "0" \
-  --cloud-watch-output-config '{"CloudWatchLogGroupName":"${this.logGroupName}","CloudWatchOutputEnabled":true}'`;
-    }
-
-    this.ssmStartSession = `aws ssm start-session \
---target $(aws autoscaling describe-auto-scaling-instances | \
-jq -r \'.AutoScalingInstances[] | select (.AutoScalingGroupName == "${this.asgName}") | .InstanceId\')`;
   }
 
-  public getClusterWriterAvailabilityZone(clusterIdentifier: string, instancesIdentifiers: string[]): string | undefined {
-    let az: string | undefined;
-    const dbClusterMembers = new cr.AwsCustomResource(this, 'GetDbClusterMembers', {
-      onCreate: {
-        service: 'RDS',
-        action: 'describeDBClusters',
-        parameters: {
-          DBClusterIdentifier: clusterIdentifier,
-        },
-        physicalResourceId: cr.PhysicalResourceId.of(`cr-${clusterIdentifier}-cluster-members`),
-      },
-      policy: cr.AwsCustomResourcePolicy.fromSdkCalls({
-        resources: cr.AwsCustomResourcePolicy.ANY_RESOURCE,
-      }),
-    });
-    let writerInstanceIdentifier: string | undefined;
-    instancesIdentifiers.forEach((instanceIdentifier, idx, _) => {
-      if (Boolean(dbClusterMembers.getResponseField(`DBClusters.0.DBClusterMembers.${idx}.IsClusterWriter`))) {writerInstanceIdentifier = instanceIdentifier;}
-    });
-    if (writerInstanceIdentifier) {az = this.getInstanceWriterAvailabilityZone(writerInstanceIdentifier);}
+  //     const autoscaler = new Autoscaler(this, 'Autoscaler', {
+  //       vpc: props.vpc,
+  //       ...this.dbWriterAZ && {
+  //         vpcSubnets: {
+  //           subnetType: ec2.SubnetType.PRIVATE_WITH_NAT,
+  //           availabilityZones: [this.dbWriterAZ],
+  //         },
+  //       },
+  //       instanceType: props.computeInstanceType,
+  //       asgName: props.computeAsgName,
+  //       minSize: props.computeMinSize,
+  //       maxSize: props.computeMaxSize,
+  //       desiredCapacity: props.computeDesiredCapacity,
+  //       onDemandPercentageAboveBaseCapacity: this.computeOnDemandPercentageAboveBaseCapacity,
+  //       tags: props.computeTags,
+  //     });
+  //     this.asgName = autoscaler.asgName;
 
-    return az;
-  }
+  //     if (this.auroraPostgres) {
+  //       this.auroraPostgres.grantAccess(autoscaler);
+  //     }
 
-  public getInstanceWriterAvailabilityZone(instanceIdentifier: string): string | undefined {
+  //     if (this.rdsPostgres) {
+  //       this.rdsPostgres.grantAccess(autoscaler);
+  //     }
+
+  //     const logGroup = new logs.LogGroup(this, 'LogGroup', {
+  //       logGroupName: props.computeLogGroupName,
+  //       removalPolicy: RemovalPolicy.DESTROY,
+  //     });
+  //     this.logGroupName = logGroup.logGroupName;
+  //     this.logGroupArn = logGroup.logGroupArn;
+
+  //     const initDocumentParameters = {
+  //       workingDirectory: [''],
+  //       executionTimeout: ['3600'],
+  //       commands: [
+  //         `export STACK_NAME=${Stack.of(this).stackName}`,
+  //         `export BENCHMARK_SCALE_FACTOR=${this.pgBenchScaleFactor}`,
+  //         `export BENCHMARK_FILL_FACTOR=${this.pgBenchFillFactor}`,
+  //         'cd /home/ec2-user/benchmark/',
+  //         'source /home/ec2-user/benchmark/postgres_writer_env.sh',
+  //         'nohup /home/ec2-user/benchmark/benchmark_init.sh 2>&1 &',
+  //       ],
+  //     };
+
+  //     this.pgInitDocument = `aws ssm send-command --targets \
+  // --instance-ids $(aws autoscaling describe-auto-scaling-groups --auto-scaling-group-names ${this.asgName} | jq -r ".AutoScalingGroups[].Instances | first .InstanceId") \
+  // --document-name "AWS-RunShellScript" \
+  // --document-version "1" \
+  // --parameters '${JSON.stringify(initDocumentParameters)}' \
+  // --timeout-seconds 600 \
+  // --cloud-watch-output-config '{"CloudWatchLogGroupName":"${this.logGroupName}","CloudWatchOutputEnabled":true}'`;
+
+  //     const targets = Object.keys(autoscaler.tags).map((k) => (
+  //       `Key=tag:${k},Values=${autoscaler.tags[k]}`
+  //     )).join(' ');
+
+  //     const defaultExecDocumentParameters = {
+  //       workingDirectory: [''],
+  //       executionTimeout: ['3600'],
+  //       commands: [
+  //         `export STACK_NAME=${Stack.of(this).stackName}`,
+  //         `export BENCHMARK_CONNECTIONS=${this.pgBenchConnections}`,
+  //         `export BENCHMARK_THREADS=${this.pgBenchThreads}`,
+  //         `export BENCHMARK_PROGRESS=${this.pgBenchProgress}`,
+  //         `export BENCHMARK_TIME=${this.pgBenchTime}`,
+  //         'cd /home/ec2-user/benchmark/',
+  //         'source /home/ec2-user/benchmark/postgres_writer_env.sh',
+  //         'nohup /home/ec2-user/benchmark/benchmark_default.sh 2>&1 &',
+  //       ],
+  //     };
+
+  //     this.pgbenchTxDocument = `aws ssm send-command --targets ${targets} \
+  // --document-name "AWS-RunShellScript" \
+  // --document-version "1" \
+  // --parameters '${JSON.stringify(defaultExecDocumentParameters)}' \
+  // --timeout-seconds ${this.pgBenchTime} \
+  // --max-concurrency "50" \
+  // --max-errors "0" \
+  // --cloud-watch-output-config '{"CloudWatchLogGroupName":"${this.logGroupName}","CloudWatchOutputEnabled":true}'`;
+
+  //     if (props.pgBenchSql) {
+  //       const execDocumentParameters = {
+  //         workingDirectory: [''],
+  //         executionTimeout: ['3600'],
+  //         commands: [
+  //           `export STACK_NAME=${Stack.of(this).stackName}`,
+  //           `export BENCHMARK_CONNECTIONS=${this.pgBenchConnections}`,
+  //           `export BENCHMARK_THREADS=${this.pgBenchThreads}`,
+  //           `export BENCHMARK_PROGRESS=${this.pgBenchProgress}`,
+  //           `export BENCHMARK_TIME=${this.pgBenchTime}`,
+  //           `export BENCHMARK_SQL_FILE=${props.pgBenchSql}`,
+  //           'cd /home/ec2-user/benchmark/',
+  //           'source /home/ec2-user/benchmark/postgres_env.sh',
+  //           'nohup /home/ec2-user/benchmark/benchmark_custom.sh 2>&1 &',
+  //         ],
+  //       };
+
+  //       this.customTxDocument = `aws ssm send-command --targets ${targets} \
+  //   --document-name "AWS-RunShellScript" \
+  //   --document-version "1" \
+  //   --parameters '${JSON.stringify(execDocumentParameters)}' \
+  //   --timeout-seconds ${this.pgBenchTime} \
+  //   --max-concurrency "50" \
+  //   --max-errors "0" \
+  //   --cloud-watch-output-config '{"CloudWatchLogGroupName":"${this.logGroupName}","CloudWatchOutputEnabled":true}'`;
+  //     }
+
+  //     this.ssmStartSession = `aws ssm start-session \
+  // --target $(aws autoscaling describe-auto-scaling-instances | \
+  // jq -r \'.AutoScalingInstances[] | select (.AutoScalingGroupName == "${this.asgName}") | .InstanceId\')`;
+  //   }
+
+  private getInstanceWriterAvailabilityZone(instanceIdentifier: string): string | undefined {
     const crWriterAZ = new cr.AwsCustomResource(this, 'GetWriterAZ', {
       onCreate: {
         service: 'RDS',

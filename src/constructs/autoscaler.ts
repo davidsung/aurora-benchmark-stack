@@ -1,5 +1,5 @@
 import * as path from 'path';
-import { Stack, Tokenization } from 'aws-cdk-lib';
+import { Stack, Tokenization, CustomResource } from 'aws-cdk-lib';
 import * as autoscaling from 'aws-cdk-lib/aws-autoscaling';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as iam from 'aws-cdk-lib/aws-iam';
@@ -21,6 +21,9 @@ export interface AutoscalerProps {
   readonly asgName?: string;
   readonly vpc: ec2.IVpc;
   readonly vpcSubnets?: ec2.SubnetSelection;
+  readonly azCustomResource: CustomResource;
+  readonly availabilityZones?: string[];
+  readonly subnetIds?: string[];
   readonly instanceType?: ec2.InstanceType;
   readonly machineImage?: ec2.IMachineImage;
   readonly role?: iam.IRole;
@@ -59,7 +62,7 @@ export class Autoscaler extends Construct implements ec2.IConnectable, iam.IGran
     this.minSize = props.minSize ? Tokenization.stringifyNumber(props.minSize) : DEFAULT_MIN_SIZE;
     this.desiredCapacity = props.desiredCapacity ? Tokenization.stringifyNumber(props.desiredCapacity) : DEFAULT_DESIRED_CAPACITY;
     this.onDemandPercentageAboveBaseCapacity = props.onDemandPercentageAboveBaseCapacity ?? DEFAULT_ON_DEMAND_PCT_ABOVE_BASE_CAPACITY;
-    const { subnetIds } = props.vpc.selectSubnets(props.vpcSubnets);
+    // const { subnetIds } = props.vpc.selectSubnets(props.vpcSubnets);
     this.tags = props.tags ?? DEFAULT_AUTOSCALER_TAGS;
 
     this.role = props.role ?? new iam.Role(this, 'Role', {
@@ -128,6 +131,11 @@ export class Autoscaler extends Construct implements ec2.IConnectable, iam.IGran
     asset.grantRead(ec2LaunchTemplate);
     asset.node.addDependency(ec2LaunchTemplate);
 
+    const { subnetIds } = props.vpc.selectSubnets({
+      availabilityZones: props.availabilityZones!,
+      subnetType: ec2.SubnetType.PRIVATE_WITH_NAT,
+    });
+
     // hack until they support LaunchTemplates properly: https://github.com/aws/aws-cdk/issues/6734
     const cfnLaunchTemplate = ec2LaunchTemplate.node.defaultChild as ec2.CfnLaunchTemplate;
     const cfnAsg = new autoscaling.CfnAutoScalingGroup(this, 'Autoscaler', {
@@ -151,7 +159,7 @@ export class Autoscaler extends Construct implements ec2.IConnectable, iam.IGran
           onDemandPercentageAboveBaseCapacity: this.onDemandPercentageAboveBaseCapacity,
         },
       },
-      availabilityZones: props.vpc.availabilityZones,
+      availabilityZones: props.availabilityZones,
       vpcZoneIdentifier: subnetIds,
       ...this.tags && {
         tags: Object.keys(this.tags).map((k) => ({
@@ -161,7 +169,8 @@ export class Autoscaler extends Construct implements ec2.IConnectable, iam.IGran
         })),
       },
     });
-    // cfnAsg.node.addDependency(asset);
+    cfnAsg.node.addDependency(props.azCustomResource);
+    cfnAsg.node.addDependency(asset);
 
     this.asgName = cfnAsg.autoScalingGroupName;
     this.connections = ec2LaunchTemplate.connections;
