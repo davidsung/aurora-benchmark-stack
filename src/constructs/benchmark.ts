@@ -3,10 +3,8 @@ import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as kms from 'aws-cdk-lib/aws-kms';
 import * as logs from 'aws-cdk-lib/aws-logs';
 import * as rds from 'aws-cdk-lib/aws-rds';
-import * as cr from 'aws-cdk-lib/custom-resources';
 import { Construct } from 'constructs';
 import { AuroraPostgresCluster } from './aurora-pg';
-import { AuroraWriterAZCustomResource } from './aurora-writer-az-custom-resource';
 import { Autoscaler } from './autoscaler';
 import { RdsPostgresInstance } from './rds-pg';
 
@@ -68,7 +66,6 @@ export class BenchmarkService extends Construct {
   public readonly asgName?: string;
   public readonly dbWriterEndpointAddress: string;
   public readonly dbWriterPort: number;
-  public readonly dbWriterAZ?: string;
   public readonly dbReaderEndpointAddress?: string;
   public readonly dbReaderPort?: number;
   public readonly dbSecretName?: string;
@@ -144,19 +141,15 @@ export class BenchmarkService extends Construct {
       this.username = this.auroraPostgres.username;
       this.dbSecretName = this.auroraPostgres.secret?.secretName;
 
-      const auroraWriterAZ = new AuroraWriterAZCustomResource(this, 'AuroraWriterAZ', {
-        clusterIdentifier: this.auroraPostgres.clusterIdentifier,
-      });
-      this.dbWriterAZ = auroraWriterAZ.getWriterAvailabilityZone();
-
       const autoscaler = new Autoscaler(this, 'Autoscaler', {
         vpc: props.vpc,
-        availabilityZones: [auroraWriterAZ.getWriterAvailabilityZone()],
         instanceType: props.computeInstanceType,
+        dbEngineVersion: props.dbEngineVersion,
+        clusterIdentifier: this.auroraPostgres.clusterIdentifier,
         asgName: props.computeAsgName,
         minSize: props.computeMinSize,
         maxSize: props.computeMaxSize,
-        // desiredCapacity: props.computeDesiredCapacity,
+        desiredCapacity: props.computeDesiredCapacity,
         onDemandPercentageAboveBaseCapacity: this.computeOnDemandPercentageAboveBaseCapacity,
         tags: props.computeTags,
       });
@@ -267,7 +260,6 @@ export class BenchmarkService extends Construct {
 
       this.dbWriterEndpointAddress = this.rdsPostgres.dbWriterEndpointAddress;
       this.dbWriterPort = this.rdsPostgres.dbWriterPort;
-      this.dbWriterAZ = this.getInstanceWriterAvailabilityZone(this.rdsPostgres.dbWriterId);
 
       if (this.createReplica) {
         this.dbReaderEndpointAddress = this.rdsPostgres.dbReaderInstanceEndpointAddress;
@@ -495,23 +487,4 @@ export class BenchmarkService extends Construct {
   // --target $(aws autoscaling describe-auto-scaling-instances | \
   // jq -r \'.AutoScalingInstances[] | select (.AutoScalingGroupName == "${this.asgName}") | .InstanceId\')`;
   //   }
-
-  private getInstanceWriterAvailabilityZone(instanceIdentifier: string): string | undefined {
-    const crWriterAZ = new cr.AwsCustomResource(this, 'GetWriterAZ', {
-      onCreate: {
-        service: 'RDS',
-        action: 'describeDBInstances',
-        parameters: {
-          DBInstanceIdentifier: instanceIdentifier,
-        },
-        physicalResourceId: cr.PhysicalResourceId.of(`cr-${instanceIdentifier}`),
-        outputPaths: ['DBInstances.0.AvailabilityZone'],
-      },
-      policy: cr.AwsCustomResourcePolicy.fromSdkCalls({
-        resources: cr.AwsCustomResourcePolicy.ANY_RESOURCE,
-      }),
-    });
-
-    return crWriterAZ.getResponseField('DBInstances.0.AvailabilityZone');
-  }
 }

@@ -193,14 +193,6 @@ Object {
     "DBUsername": Object {
       "Value": "benchmark",
     },
-    "DBWriterAZ": Object {
-      "Value": Object {
-        "Fn::GetAtt": Array [
-          "BenchmarkServiceAuroraWriterAZWriterAvailabilityZoneCustomResourceFAC87A23",
-          "AvailabilityZone",
-        ],
-      },
-    },
     "DBWriterEndpoint": Object {
       "Value": Object {
         "Fn::GetAtt": Array [
@@ -442,683 +434,6 @@ Object {
       },
       "Type": "AWS::RDS::DBSubnetGroup",
     },
-    "BenchmarkServiceAuroraWriterAZAuroraWriterAZRole43902C49": Object {
-      "Properties": Object {
-        "AssumeRolePolicyDocument": Object {
-          "Statement": Array [
-            Object {
-              "Action": "sts:AssumeRole",
-              "Effect": "Allow",
-              "Principal": Object {
-                "Service": "lambda.amazonaws.com",
-              },
-            },
-          ],
-          "Version": "2012-10-17",
-        },
-        "ManagedPolicyArns": Array [
-          Object {
-            "Fn::Join": Array [
-              "",
-              Array [
-                "arn:",
-                Object {
-                  "Ref": "AWS::Partition",
-                },
-                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
-              ],
-            ],
-          },
-        ],
-      },
-      "Type": "AWS::IAM::Role",
-    },
-    "BenchmarkServiceAuroraWriterAZAuroraWriterAZRoleDefaultPolicyC781C58B": Object {
-      "Properties": Object {
-        "PolicyDocument": Object {
-          "Statement": Array [
-            Object {
-              "Action": Array [
-                "rds:DescribeDBClusters",
-                "rds:DescribeDBInstances",
-              ],
-              "Effect": "Allow",
-              "Resource": "*",
-            },
-          ],
-          "Version": "2012-10-17",
-        },
-        "PolicyName": "BenchmarkServiceAuroraWriterAZAuroraWriterAZRoleDefaultPolicyC781C58B",
-        "Roles": Array [
-          Object {
-            "Ref": "BenchmarkServiceAuroraWriterAZAuroraWriterAZRole43902C49",
-          },
-        ],
-      },
-      "Type": "AWS::IAM::Policy",
-    },
-    "BenchmarkServiceAuroraWriterAZCustomResourceLambda10941483": Object {
-      "DependsOn": Array [
-        "BenchmarkServiceAuroraWriterAZAuroraWriterAZRoleDefaultPolicyC781C58B",
-        "BenchmarkServiceAuroraWriterAZAuroraWriterAZRole43902C49",
-      ],
-      "Properties": Object {
-        "Code": Object {
-          "S3Bucket": Object {
-            "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
-          },
-          "S3Key": "b0915f861424d414eb75bc4ea81c4da70f8bd193758ee3ecdc48bf0f450f3c81.zip",
-        },
-        "Handler": "aurora_writer_az_event_handler.on_event",
-        "Role": Object {
-          "Fn::GetAtt": Array [
-            "BenchmarkServiceAuroraWriterAZAuroraWriterAZRole43902C49",
-            "Arn",
-          ],
-        },
-        "Runtime": "python3.8",
-      },
-      "Type": "AWS::Lambda::Function",
-    },
-    "BenchmarkServiceAuroraWriterAZProviderframeworkisComplete49D7D905": Object {
-      "DependsOn": Array [
-        "BenchmarkServiceAuroraWriterAZProviderframeworkisCompleteServiceRoleDefaultPolicy598096AE",
-        "BenchmarkServiceAuroraWriterAZProviderframeworkisCompleteServiceRole866196CD",
-      ],
-      "Properties": Object {
-        "Code": Object {
-          "S3Bucket": Object {
-            "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
-          },
-          "S3Key": "eaeb69bc290b516fe3b049f89d6118b22249df682fbabf56af300cf345198574.zip",
-        },
-        "Description": "AWS CDK resource provider framework - isComplete (test/BenchmarkService/AuroraWriterAZ/Provider)",
-        "Environment": Object {
-          "Variables": Object {
-            "USER_IS_COMPLETE_FUNCTION_ARN": Object {
-              "Fn::GetAtt": Array [
-                "BenchmarkServiceAuroraWriterAZRDSGetWriterAZIsCompleteFn108C5988",
-                "Arn",
-              ],
-            },
-            "USER_ON_EVENT_FUNCTION_ARN": Object {
-              "Fn::GetAtt": Array [
-                "BenchmarkServiceAuroraWriterAZCustomResourceLambda10941483",
-                "Arn",
-              ],
-            },
-          },
-        },
-        "Handler": "framework.isComplete",
-        "Role": Object {
-          "Fn::GetAtt": Array [
-            "BenchmarkServiceAuroraWriterAZProviderframeworkisCompleteServiceRole866196CD",
-            "Arn",
-          ],
-        },
-        "Runtime": "nodejs12.x",
-        "Timeout": 900,
-      },
-      "Type": "AWS::Lambda::Function",
-    },
-    "BenchmarkServiceAuroraWriterAZProviderframeworkisCompleteServiceRole866196CD": Object {
-      "Properties": Object {
-        "AssumeRolePolicyDocument": Object {
-          "Statement": Array [
-            Object {
-              "Action": "sts:AssumeRole",
-              "Effect": "Allow",
-              "Principal": Object {
-                "Service": "lambda.amazonaws.com",
-              },
-            },
-          ],
-          "Version": "2012-10-17",
-        },
-        "ManagedPolicyArns": Array [
-          Object {
-            "Fn::Join": Array [
-              "",
-              Array [
-                "arn:",
-                Object {
-                  "Ref": "AWS::Partition",
-                },
-                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
-              ],
-            ],
-          },
-        ],
-      },
-      "Type": "AWS::IAM::Role",
-    },
-    "BenchmarkServiceAuroraWriterAZProviderframeworkisCompleteServiceRoleDefaultPolicy598096AE": Object {
-      "Properties": Object {
-        "PolicyDocument": Object {
-          "Statement": Array [
-            Object {
-              "Action": "lambda:InvokeFunction",
-              "Effect": "Allow",
-              "Resource": Array [
-                Object {
-                  "Fn::GetAtt": Array [
-                    "BenchmarkServiceAuroraWriterAZCustomResourceLambda10941483",
-                    "Arn",
-                  ],
-                },
-                Object {
-                  "Fn::Join": Array [
-                    "",
-                    Array [
-                      Object {
-                        "Fn::GetAtt": Array [
-                          "BenchmarkServiceAuroraWriterAZCustomResourceLambda10941483",
-                          "Arn",
-                        ],
-                      },
-                      ":*",
-                    ],
-                  ],
-                },
-              ],
-            },
-            Object {
-              "Action": "lambda:InvokeFunction",
-              "Effect": "Allow",
-              "Resource": Array [
-                Object {
-                  "Fn::GetAtt": Array [
-                    "BenchmarkServiceAuroraWriterAZRDSGetWriterAZIsCompleteFn108C5988",
-                    "Arn",
-                  ],
-                },
-                Object {
-                  "Fn::Join": Array [
-                    "",
-                    Array [
-                      Object {
-                        "Fn::GetAtt": Array [
-                          "BenchmarkServiceAuroraWriterAZRDSGetWriterAZIsCompleteFn108C5988",
-                          "Arn",
-                        ],
-                      },
-                      ":*",
-                    ],
-                  ],
-                },
-              ],
-            },
-          ],
-          "Version": "2012-10-17",
-        },
-        "PolicyName": "BenchmarkServiceAuroraWriterAZProviderframeworkisCompleteServiceRoleDefaultPolicy598096AE",
-        "Roles": Array [
-          Object {
-            "Ref": "BenchmarkServiceAuroraWriterAZProviderframeworkisCompleteServiceRole866196CD",
-          },
-        ],
-      },
-      "Type": "AWS::IAM::Policy",
-    },
-    "BenchmarkServiceAuroraWriterAZProviderframeworkonEvent04443176": Object {
-      "DependsOn": Array [
-        "BenchmarkServiceAuroraWriterAZProviderframeworkonEventServiceRoleDefaultPolicy14DD2302",
-        "BenchmarkServiceAuroraWriterAZProviderframeworkonEventServiceRole142A4909",
-      ],
-      "Properties": Object {
-        "Code": Object {
-          "S3Bucket": Object {
-            "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
-          },
-          "S3Key": "eaeb69bc290b516fe3b049f89d6118b22249df682fbabf56af300cf345198574.zip",
-        },
-        "Description": "AWS CDK resource provider framework - onEvent (test/BenchmarkService/AuroraWriterAZ/Provider)",
-        "Environment": Object {
-          "Variables": Object {
-            "USER_IS_COMPLETE_FUNCTION_ARN": Object {
-              "Fn::GetAtt": Array [
-                "BenchmarkServiceAuroraWriterAZRDSGetWriterAZIsCompleteFn108C5988",
-                "Arn",
-              ],
-            },
-            "USER_ON_EVENT_FUNCTION_ARN": Object {
-              "Fn::GetAtt": Array [
-                "BenchmarkServiceAuroraWriterAZCustomResourceLambda10941483",
-                "Arn",
-              ],
-            },
-            "WAITER_STATE_MACHINE_ARN": Object {
-              "Ref": "BenchmarkServiceAuroraWriterAZProviderwaiterstatemachine35DDD308",
-            },
-          },
-        },
-        "Handler": "framework.onEvent",
-        "Role": Object {
-          "Fn::GetAtt": Array [
-            "BenchmarkServiceAuroraWriterAZProviderframeworkonEventServiceRole142A4909",
-            "Arn",
-          ],
-        },
-        "Runtime": "nodejs12.x",
-        "Timeout": 900,
-      },
-      "Type": "AWS::Lambda::Function",
-    },
-    "BenchmarkServiceAuroraWriterAZProviderframeworkonEventServiceRole142A4909": Object {
-      "Properties": Object {
-        "AssumeRolePolicyDocument": Object {
-          "Statement": Array [
-            Object {
-              "Action": "sts:AssumeRole",
-              "Effect": "Allow",
-              "Principal": Object {
-                "Service": "lambda.amazonaws.com",
-              },
-            },
-          ],
-          "Version": "2012-10-17",
-        },
-        "ManagedPolicyArns": Array [
-          Object {
-            "Fn::Join": Array [
-              "",
-              Array [
-                "arn:",
-                Object {
-                  "Ref": "AWS::Partition",
-                },
-                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
-              ],
-            ],
-          },
-        ],
-      },
-      "Type": "AWS::IAM::Role",
-    },
-    "BenchmarkServiceAuroraWriterAZProviderframeworkonEventServiceRoleDefaultPolicy14DD2302": Object {
-      "Properties": Object {
-        "PolicyDocument": Object {
-          "Statement": Array [
-            Object {
-              "Action": "lambda:InvokeFunction",
-              "Effect": "Allow",
-              "Resource": Array [
-                Object {
-                  "Fn::GetAtt": Array [
-                    "BenchmarkServiceAuroraWriterAZCustomResourceLambda10941483",
-                    "Arn",
-                  ],
-                },
-                Object {
-                  "Fn::Join": Array [
-                    "",
-                    Array [
-                      Object {
-                        "Fn::GetAtt": Array [
-                          "BenchmarkServiceAuroraWriterAZCustomResourceLambda10941483",
-                          "Arn",
-                        ],
-                      },
-                      ":*",
-                    ],
-                  ],
-                },
-              ],
-            },
-            Object {
-              "Action": "lambda:InvokeFunction",
-              "Effect": "Allow",
-              "Resource": Array [
-                Object {
-                  "Fn::GetAtt": Array [
-                    "BenchmarkServiceAuroraWriterAZRDSGetWriterAZIsCompleteFn108C5988",
-                    "Arn",
-                  ],
-                },
-                Object {
-                  "Fn::Join": Array [
-                    "",
-                    Array [
-                      Object {
-                        "Fn::GetAtt": Array [
-                          "BenchmarkServiceAuroraWriterAZRDSGetWriterAZIsCompleteFn108C5988",
-                          "Arn",
-                        ],
-                      },
-                      ":*",
-                    ],
-                  ],
-                },
-              ],
-            },
-            Object {
-              "Action": "states:StartExecution",
-              "Effect": "Allow",
-              "Resource": Object {
-                "Ref": "BenchmarkServiceAuroraWriterAZProviderwaiterstatemachine35DDD308",
-              },
-            },
-          ],
-          "Version": "2012-10-17",
-        },
-        "PolicyName": "BenchmarkServiceAuroraWriterAZProviderframeworkonEventServiceRoleDefaultPolicy14DD2302",
-        "Roles": Array [
-          Object {
-            "Ref": "BenchmarkServiceAuroraWriterAZProviderframeworkonEventServiceRole142A4909",
-          },
-        ],
-      },
-      "Type": "AWS::IAM::Policy",
-    },
-    "BenchmarkServiceAuroraWriterAZProviderframeworkonTimeout1329B573": Object {
-      "DependsOn": Array [
-        "BenchmarkServiceAuroraWriterAZProviderframeworkonTimeoutServiceRoleDefaultPolicyC9E016D4",
-        "BenchmarkServiceAuroraWriterAZProviderframeworkonTimeoutServiceRole861A73ED",
-      ],
-      "Properties": Object {
-        "Code": Object {
-          "S3Bucket": Object {
-            "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
-          },
-          "S3Key": "eaeb69bc290b516fe3b049f89d6118b22249df682fbabf56af300cf345198574.zip",
-        },
-        "Description": "AWS CDK resource provider framework - onTimeout (test/BenchmarkService/AuroraWriterAZ/Provider)",
-        "Environment": Object {
-          "Variables": Object {
-            "USER_IS_COMPLETE_FUNCTION_ARN": Object {
-              "Fn::GetAtt": Array [
-                "BenchmarkServiceAuroraWriterAZRDSGetWriterAZIsCompleteFn108C5988",
-                "Arn",
-              ],
-            },
-            "USER_ON_EVENT_FUNCTION_ARN": Object {
-              "Fn::GetAtt": Array [
-                "BenchmarkServiceAuroraWriterAZCustomResourceLambda10941483",
-                "Arn",
-              ],
-            },
-          },
-        },
-        "Handler": "framework.onTimeout",
-        "Role": Object {
-          "Fn::GetAtt": Array [
-            "BenchmarkServiceAuroraWriterAZProviderframeworkonTimeoutServiceRole861A73ED",
-            "Arn",
-          ],
-        },
-        "Runtime": "nodejs12.x",
-        "Timeout": 900,
-      },
-      "Type": "AWS::Lambda::Function",
-    },
-    "BenchmarkServiceAuroraWriterAZProviderframeworkonTimeoutServiceRole861A73ED": Object {
-      "Properties": Object {
-        "AssumeRolePolicyDocument": Object {
-          "Statement": Array [
-            Object {
-              "Action": "sts:AssumeRole",
-              "Effect": "Allow",
-              "Principal": Object {
-                "Service": "lambda.amazonaws.com",
-              },
-            },
-          ],
-          "Version": "2012-10-17",
-        },
-        "ManagedPolicyArns": Array [
-          Object {
-            "Fn::Join": Array [
-              "",
-              Array [
-                "arn:",
-                Object {
-                  "Ref": "AWS::Partition",
-                },
-                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
-              ],
-            ],
-          },
-        ],
-      },
-      "Type": "AWS::IAM::Role",
-    },
-    "BenchmarkServiceAuroraWriterAZProviderframeworkonTimeoutServiceRoleDefaultPolicyC9E016D4": Object {
-      "Properties": Object {
-        "PolicyDocument": Object {
-          "Statement": Array [
-            Object {
-              "Action": "lambda:InvokeFunction",
-              "Effect": "Allow",
-              "Resource": Array [
-                Object {
-                  "Fn::GetAtt": Array [
-                    "BenchmarkServiceAuroraWriterAZCustomResourceLambda10941483",
-                    "Arn",
-                  ],
-                },
-                Object {
-                  "Fn::Join": Array [
-                    "",
-                    Array [
-                      Object {
-                        "Fn::GetAtt": Array [
-                          "BenchmarkServiceAuroraWriterAZCustomResourceLambda10941483",
-                          "Arn",
-                        ],
-                      },
-                      ":*",
-                    ],
-                  ],
-                },
-              ],
-            },
-            Object {
-              "Action": "lambda:InvokeFunction",
-              "Effect": "Allow",
-              "Resource": Array [
-                Object {
-                  "Fn::GetAtt": Array [
-                    "BenchmarkServiceAuroraWriterAZRDSGetWriterAZIsCompleteFn108C5988",
-                    "Arn",
-                  ],
-                },
-                Object {
-                  "Fn::Join": Array [
-                    "",
-                    Array [
-                      Object {
-                        "Fn::GetAtt": Array [
-                          "BenchmarkServiceAuroraWriterAZRDSGetWriterAZIsCompleteFn108C5988",
-                          "Arn",
-                        ],
-                      },
-                      ":*",
-                    ],
-                  ],
-                },
-              ],
-            },
-          ],
-          "Version": "2012-10-17",
-        },
-        "PolicyName": "BenchmarkServiceAuroraWriterAZProviderframeworkonTimeoutServiceRoleDefaultPolicyC9E016D4",
-        "Roles": Array [
-          Object {
-            "Ref": "BenchmarkServiceAuroraWriterAZProviderframeworkonTimeoutServiceRole861A73ED",
-          },
-        ],
-      },
-      "Type": "AWS::IAM::Policy",
-    },
-    "BenchmarkServiceAuroraWriterAZProviderwaiterstatemachine35DDD308": Object {
-      "DependsOn": Array [
-        "BenchmarkServiceAuroraWriterAZProviderwaiterstatemachineRoleDefaultPolicyA9010B7A",
-        "BenchmarkServiceAuroraWriterAZProviderwaiterstatemachineRoleA85F3E2B",
-      ],
-      "Properties": Object {
-        "DefinitionString": Object {
-          "Fn::Join": Array [
-            "",
-            Array [
-              "{\\"StartAt\\":\\"framework-isComplete-task\\",\\"States\\":{\\"framework-isComplete-task\\":{\\"End\\":true,\\"Retry\\":[{\\"ErrorEquals\\":[\\"States.ALL\\"],\\"IntervalSeconds\\":5,\\"MaxAttempts\\":360,\\"BackoffRate\\":1}],\\"Catch\\":[{\\"ErrorEquals\\":[\\"States.ALL\\"],\\"Next\\":\\"framework-onTimeout-task\\"}],\\"Type\\":\\"Task\\",\\"Resource\\":\\"",
-              Object {
-                "Fn::GetAtt": Array [
-                  "BenchmarkServiceAuroraWriterAZProviderframeworkisComplete49D7D905",
-                  "Arn",
-                ],
-              },
-              "\\"},\\"framework-onTimeout-task\\":{\\"End\\":true,\\"Type\\":\\"Task\\",\\"Resource\\":\\"",
-              Object {
-                "Fn::GetAtt": Array [
-                  "BenchmarkServiceAuroraWriterAZProviderframeworkonTimeout1329B573",
-                  "Arn",
-                ],
-              },
-              "\\"}}}",
-            ],
-          ],
-        },
-        "RoleArn": Object {
-          "Fn::GetAtt": Array [
-            "BenchmarkServiceAuroraWriterAZProviderwaiterstatemachineRoleA85F3E2B",
-            "Arn",
-          ],
-        },
-      },
-      "Type": "AWS::StepFunctions::StateMachine",
-    },
-    "BenchmarkServiceAuroraWriterAZProviderwaiterstatemachineRoleA85F3E2B": Object {
-      "Properties": Object {
-        "AssumeRolePolicyDocument": Object {
-          "Statement": Array [
-            Object {
-              "Action": "sts:AssumeRole",
-              "Effect": "Allow",
-              "Principal": Object {
-                "Service": Object {
-                  "Fn::FindInMap": Array [
-                    "ServiceprincipalMap",
-                    Object {
-                      "Ref": "AWS::Region",
-                    },
-                    "states",
-                  ],
-                },
-              },
-            },
-          ],
-          "Version": "2012-10-17",
-        },
-      },
-      "Type": "AWS::IAM::Role",
-    },
-    "BenchmarkServiceAuroraWriterAZProviderwaiterstatemachineRoleDefaultPolicyA9010B7A": Object {
-      "Properties": Object {
-        "PolicyDocument": Object {
-          "Statement": Array [
-            Object {
-              "Action": "lambda:InvokeFunction",
-              "Effect": "Allow",
-              "Resource": Array [
-                Object {
-                  "Fn::GetAtt": Array [
-                    "BenchmarkServiceAuroraWriterAZProviderframeworkisComplete49D7D905",
-                    "Arn",
-                  ],
-                },
-                Object {
-                  "Fn::Join": Array [
-                    "",
-                    Array [
-                      Object {
-                        "Fn::GetAtt": Array [
-                          "BenchmarkServiceAuroraWriterAZProviderframeworkisComplete49D7D905",
-                          "Arn",
-                        ],
-                      },
-                      ":*",
-                    ],
-                  ],
-                },
-              ],
-            },
-            Object {
-              "Action": "lambda:InvokeFunction",
-              "Effect": "Allow",
-              "Resource": Array [
-                Object {
-                  "Fn::GetAtt": Array [
-                    "BenchmarkServiceAuroraWriterAZProviderframeworkonTimeout1329B573",
-                    "Arn",
-                  ],
-                },
-                Object {
-                  "Fn::Join": Array [
-                    "",
-                    Array [
-                      Object {
-                        "Fn::GetAtt": Array [
-                          "BenchmarkServiceAuroraWriterAZProviderframeworkonTimeout1329B573",
-                          "Arn",
-                        ],
-                      },
-                      ":*",
-                    ],
-                  ],
-                },
-              ],
-            },
-          ],
-          "Version": "2012-10-17",
-        },
-        "PolicyName": "BenchmarkServiceAuroraWriterAZProviderwaiterstatemachineRoleDefaultPolicyA9010B7A",
-        "Roles": Array [
-          Object {
-            "Ref": "BenchmarkServiceAuroraWriterAZProviderwaiterstatemachineRoleA85F3E2B",
-          },
-        ],
-      },
-      "Type": "AWS::IAM::Policy",
-    },
-    "BenchmarkServiceAuroraWriterAZRDSGetWriterAZIsCompleteFn108C5988": Object {
-      "DependsOn": Array [
-        "BenchmarkServiceAuroraWriterAZAuroraWriterAZRoleDefaultPolicyC781C58B",
-        "BenchmarkServiceAuroraWriterAZAuroraWriterAZRole43902C49",
-      ],
-      "Properties": Object {
-        "Code": Object {
-          "S3Bucket": Object {
-            "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
-          },
-          "S3Key": "b0915f861424d414eb75bc4ea81c4da70f8bd193758ee3ecdc48bf0f450f3c81.zip",
-        },
-        "Handler": "aurora_writer_az_is_complete_handler.is_complete",
-        "Role": Object {
-          "Fn::GetAtt": Array [
-            "BenchmarkServiceAuroraWriterAZAuroraWriterAZRole43902C49",
-            "Arn",
-          ],
-        },
-        "Runtime": "python3.8",
-      },
-      "Type": "AWS::Lambda::Function",
-    },
-    "BenchmarkServiceAuroraWriterAZWriterAvailabilityZoneCustomResourceFAC87A23": Object {
-      "DeletionPolicy": "Delete",
-      "Properties": Object {
-        "ClusterIdentifier": Object {
-          "Ref": "BenchmarkServiceAuroraPostgresDatabaseClusterDD5B86C0",
-        },
-        "ServiceToken": Object {
-          "Fn::GetAtt": Array [
-            "BenchmarkServiceAuroraWriterAZProviderframeworkonEvent04443176",
-            "Arn",
-          ],
-        },
-      },
-      "Type": "AWS::CloudFormation::CustomResource",
-      "UpdateReplacePolicy": "Delete",
-    },
     "BenchmarkServiceAutoscalerASG4E12DE6C": Object {
       "Properties": Object {
         "MaxSize": "1",
@@ -1148,7 +463,14 @@ Object {
             "Value": "transaction_group",
           },
         ],
-        "VPCZoneIdentifier": Array [],
+        "VPCZoneIdentifier": Array [
+          Object {
+            "Fn::GetAtt": Array [
+              "BenchmarkServiceAutoscalerDBAvailabilityZoneAwarenessCustomResource51E1B310",
+              "SubnetId",
+            ],
+          },
+        ],
       },
       "Type": "AWS::AutoScaling::AutoScalingGroup",
       "UpdatePolicy": Object {
@@ -1263,6 +585,688 @@ sudo chmod +x /home/ec2-user/benchmark/*.sh",
         },
       },
       "Type": "AWS::EC2::SecurityGroup",
+    },
+    "BenchmarkServiceAutoscalerDBAvailabilityZoneAwarenessCustomResource51E1B310": Object {
+      "DeletionPolicy": "Delete",
+      "Properties": Object {
+        "ClusterIdentifier": Object {
+          "Ref": "BenchmarkServiceAuroraPostgresDatabaseClusterDD5B86C0",
+        },
+        "ServiceToken": Object {
+          "Fn::GetAtt": Array [
+            "BenchmarkServiceAutoscalerDBAvailabilityZoneAwarenessCustomResourceProviderframeworkonEventA45FDBF0",
+            "Arn",
+          ],
+        },
+        "VpcId": Object {
+          "Ref": "Vpc8378EB38",
+        },
+      },
+      "Type": "AWS::CloudFormation::CustomResource",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "BenchmarkServiceAutoscalerDBAvailabilityZoneAwarenessCustomResourceDBAvailabilityZoneAwarenessIsCompleteFn453790C4": Object {
+      "DependsOn": Array [
+        "BenchmarkServiceAutoscalerDBAvailabilityZoneAwarenessCustomResourceDBAvailabilityZoneAwarenessLambdaRoleDefaultPolicy7DE031CD",
+        "BenchmarkServiceAutoscalerDBAvailabilityZoneAwarenessCustomResourceDBAvailabilityZoneAwarenessLambdaRoleFD0F0A8E",
+      ],
+      "Properties": Object {
+        "Code": Object {
+          "S3Bucket": Object {
+            "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
+          },
+          "S3Key": "3a32498383d786b3a6c9bcc79f170d565f472d8d67d7058109e66b121df68b7f.zip",
+        },
+        "Handler": "db_az_awareness_event_handler.is_complete",
+        "Role": Object {
+          "Fn::GetAtt": Array [
+            "BenchmarkServiceAutoscalerDBAvailabilityZoneAwarenessCustomResourceDBAvailabilityZoneAwarenessLambdaRoleFD0F0A8E",
+            "Arn",
+          ],
+        },
+        "Runtime": "python3.8",
+      },
+      "Type": "AWS::Lambda::Function",
+    },
+    "BenchmarkServiceAutoscalerDBAvailabilityZoneAwarenessCustomResourceDBAvailabilityZoneAwarenessLambdaRoleDefaultPolicy7DE031CD": Object {
+      "Properties": Object {
+        "PolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": Array [
+                "ec2:DescribeVPCs",
+                "ec2:DescribeSubnets",
+                "rds:DescribeDBClusters",
+                "rds:DescribeDBInstances",
+              ],
+              "Effect": "Allow",
+              "Resource": "*",
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "BenchmarkServiceAutoscalerDBAvailabilityZoneAwarenessCustomResourceDBAvailabilityZoneAwarenessLambdaRoleDefaultPolicy7DE031CD",
+        "Roles": Array [
+          Object {
+            "Ref": "BenchmarkServiceAutoscalerDBAvailabilityZoneAwarenessCustomResourceDBAvailabilityZoneAwarenessLambdaRoleFD0F0A8E",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "BenchmarkServiceAutoscalerDBAvailabilityZoneAwarenessCustomResourceDBAvailabilityZoneAwarenessLambdaRoleFD0F0A8E": Object {
+      "Properties": Object {
+        "AssumeRolePolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": Object {
+                "Service": "lambda.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "ManagedPolicyArns": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:",
+                Object {
+                  "Ref": "AWS::Partition",
+                },
+                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+              ],
+            ],
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "BenchmarkServiceAutoscalerDBAvailabilityZoneAwarenessCustomResourceDBAvailabilityZoneAwarenessOnEventFnD842F238": Object {
+      "DependsOn": Array [
+        "BenchmarkServiceAutoscalerDBAvailabilityZoneAwarenessCustomResourceDBAvailabilityZoneAwarenessLambdaRoleDefaultPolicy7DE031CD",
+        "BenchmarkServiceAutoscalerDBAvailabilityZoneAwarenessCustomResourceDBAvailabilityZoneAwarenessLambdaRoleFD0F0A8E",
+      ],
+      "Properties": Object {
+        "Code": Object {
+          "S3Bucket": Object {
+            "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
+          },
+          "S3Key": "3a32498383d786b3a6c9bcc79f170d565f472d8d67d7058109e66b121df68b7f.zip",
+        },
+        "Handler": "db_az_awareness_event_handler.on_event",
+        "Role": Object {
+          "Fn::GetAtt": Array [
+            "BenchmarkServiceAutoscalerDBAvailabilityZoneAwarenessCustomResourceDBAvailabilityZoneAwarenessLambdaRoleFD0F0A8E",
+            "Arn",
+          ],
+        },
+        "Runtime": "python3.8",
+      },
+      "Type": "AWS::Lambda::Function",
+    },
+    "BenchmarkServiceAutoscalerDBAvailabilityZoneAwarenessCustomResourceProviderframeworkisComplete76F74455": Object {
+      "DependsOn": Array [
+        "BenchmarkServiceAutoscalerDBAvailabilityZoneAwarenessCustomResourceProviderframeworkisCompleteServiceRoleDefaultPolicyED39A243",
+        "BenchmarkServiceAutoscalerDBAvailabilityZoneAwarenessCustomResourceProviderframeworkisCompleteServiceRole3963253A",
+      ],
+      "Properties": Object {
+        "Code": Object {
+          "S3Bucket": Object {
+            "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
+          },
+          "S3Key": "eaeb69bc290b516fe3b049f89d6118b22249df682fbabf56af300cf345198574.zip",
+        },
+        "Description": "AWS CDK resource provider framework - isComplete (test/BenchmarkService/Autoscaler/DBAvailabilityZoneAwarenessCustomResource/Provider)",
+        "Environment": Object {
+          "Variables": Object {
+            "USER_IS_COMPLETE_FUNCTION_ARN": Object {
+              "Fn::GetAtt": Array [
+                "BenchmarkServiceAutoscalerDBAvailabilityZoneAwarenessCustomResourceDBAvailabilityZoneAwarenessIsCompleteFn453790C4",
+                "Arn",
+              ],
+            },
+            "USER_ON_EVENT_FUNCTION_ARN": Object {
+              "Fn::GetAtt": Array [
+                "BenchmarkServiceAutoscalerDBAvailabilityZoneAwarenessCustomResourceDBAvailabilityZoneAwarenessOnEventFnD842F238",
+                "Arn",
+              ],
+            },
+          },
+        },
+        "Handler": "framework.isComplete",
+        "Role": Object {
+          "Fn::GetAtt": Array [
+            "BenchmarkServiceAutoscalerDBAvailabilityZoneAwarenessCustomResourceProviderframeworkisCompleteServiceRole3963253A",
+            "Arn",
+          ],
+        },
+        "Runtime": "nodejs12.x",
+        "Timeout": 900,
+      },
+      "Type": "AWS::Lambda::Function",
+    },
+    "BenchmarkServiceAutoscalerDBAvailabilityZoneAwarenessCustomResourceProviderframeworkisCompleteServiceRole3963253A": Object {
+      "Properties": Object {
+        "AssumeRolePolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": Object {
+                "Service": "lambda.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "ManagedPolicyArns": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:",
+                Object {
+                  "Ref": "AWS::Partition",
+                },
+                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+              ],
+            ],
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "BenchmarkServiceAutoscalerDBAvailabilityZoneAwarenessCustomResourceProviderframeworkisCompleteServiceRoleDefaultPolicyED39A243": Object {
+      "Properties": Object {
+        "PolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": "lambda:InvokeFunction",
+              "Effect": "Allow",
+              "Resource": Array [
+                Object {
+                  "Fn::GetAtt": Array [
+                    "BenchmarkServiceAutoscalerDBAvailabilityZoneAwarenessCustomResourceDBAvailabilityZoneAwarenessOnEventFnD842F238",
+                    "Arn",
+                  ],
+                },
+                Object {
+                  "Fn::Join": Array [
+                    "",
+                    Array [
+                      Object {
+                        "Fn::GetAtt": Array [
+                          "BenchmarkServiceAutoscalerDBAvailabilityZoneAwarenessCustomResourceDBAvailabilityZoneAwarenessOnEventFnD842F238",
+                          "Arn",
+                        ],
+                      },
+                      ":*",
+                    ],
+                  ],
+                },
+              ],
+            },
+            Object {
+              "Action": "lambda:InvokeFunction",
+              "Effect": "Allow",
+              "Resource": Array [
+                Object {
+                  "Fn::GetAtt": Array [
+                    "BenchmarkServiceAutoscalerDBAvailabilityZoneAwarenessCustomResourceDBAvailabilityZoneAwarenessIsCompleteFn453790C4",
+                    "Arn",
+                  ],
+                },
+                Object {
+                  "Fn::Join": Array [
+                    "",
+                    Array [
+                      Object {
+                        "Fn::GetAtt": Array [
+                          "BenchmarkServiceAutoscalerDBAvailabilityZoneAwarenessCustomResourceDBAvailabilityZoneAwarenessIsCompleteFn453790C4",
+                          "Arn",
+                        ],
+                      },
+                      ":*",
+                    ],
+                  ],
+                },
+              ],
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "BenchmarkServiceAutoscalerDBAvailabilityZoneAwarenessCustomResourceProviderframeworkisCompleteServiceRoleDefaultPolicyED39A243",
+        "Roles": Array [
+          Object {
+            "Ref": "BenchmarkServiceAutoscalerDBAvailabilityZoneAwarenessCustomResourceProviderframeworkisCompleteServiceRole3963253A",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "BenchmarkServiceAutoscalerDBAvailabilityZoneAwarenessCustomResourceProviderframeworkonEventA45FDBF0": Object {
+      "DependsOn": Array [
+        "BenchmarkServiceAutoscalerDBAvailabilityZoneAwarenessCustomResourceProviderframeworkonEventServiceRoleDefaultPolicy184879B1",
+        "BenchmarkServiceAutoscalerDBAvailabilityZoneAwarenessCustomResourceProviderframeworkonEventServiceRole257D58C0",
+      ],
+      "Properties": Object {
+        "Code": Object {
+          "S3Bucket": Object {
+            "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
+          },
+          "S3Key": "eaeb69bc290b516fe3b049f89d6118b22249df682fbabf56af300cf345198574.zip",
+        },
+        "Description": "AWS CDK resource provider framework - onEvent (test/BenchmarkService/Autoscaler/DBAvailabilityZoneAwarenessCustomResource/Provider)",
+        "Environment": Object {
+          "Variables": Object {
+            "USER_IS_COMPLETE_FUNCTION_ARN": Object {
+              "Fn::GetAtt": Array [
+                "BenchmarkServiceAutoscalerDBAvailabilityZoneAwarenessCustomResourceDBAvailabilityZoneAwarenessIsCompleteFn453790C4",
+                "Arn",
+              ],
+            },
+            "USER_ON_EVENT_FUNCTION_ARN": Object {
+              "Fn::GetAtt": Array [
+                "BenchmarkServiceAutoscalerDBAvailabilityZoneAwarenessCustomResourceDBAvailabilityZoneAwarenessOnEventFnD842F238",
+                "Arn",
+              ],
+            },
+            "WAITER_STATE_MACHINE_ARN": Object {
+              "Ref": "BenchmarkServiceAutoscalerDBAvailabilityZoneAwarenessCustomResourceProviderwaiterstatemachineAE201AFA",
+            },
+          },
+        },
+        "Handler": "framework.onEvent",
+        "Role": Object {
+          "Fn::GetAtt": Array [
+            "BenchmarkServiceAutoscalerDBAvailabilityZoneAwarenessCustomResourceProviderframeworkonEventServiceRole257D58C0",
+            "Arn",
+          ],
+        },
+        "Runtime": "nodejs12.x",
+        "Timeout": 900,
+      },
+      "Type": "AWS::Lambda::Function",
+    },
+    "BenchmarkServiceAutoscalerDBAvailabilityZoneAwarenessCustomResourceProviderframeworkonEventServiceRole257D58C0": Object {
+      "Properties": Object {
+        "AssumeRolePolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": Object {
+                "Service": "lambda.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "ManagedPolicyArns": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:",
+                Object {
+                  "Ref": "AWS::Partition",
+                },
+                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+              ],
+            ],
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "BenchmarkServiceAutoscalerDBAvailabilityZoneAwarenessCustomResourceProviderframeworkonEventServiceRoleDefaultPolicy184879B1": Object {
+      "Properties": Object {
+        "PolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": "lambda:InvokeFunction",
+              "Effect": "Allow",
+              "Resource": Array [
+                Object {
+                  "Fn::GetAtt": Array [
+                    "BenchmarkServiceAutoscalerDBAvailabilityZoneAwarenessCustomResourceDBAvailabilityZoneAwarenessOnEventFnD842F238",
+                    "Arn",
+                  ],
+                },
+                Object {
+                  "Fn::Join": Array [
+                    "",
+                    Array [
+                      Object {
+                        "Fn::GetAtt": Array [
+                          "BenchmarkServiceAutoscalerDBAvailabilityZoneAwarenessCustomResourceDBAvailabilityZoneAwarenessOnEventFnD842F238",
+                          "Arn",
+                        ],
+                      },
+                      ":*",
+                    ],
+                  ],
+                },
+              ],
+            },
+            Object {
+              "Action": "lambda:InvokeFunction",
+              "Effect": "Allow",
+              "Resource": Array [
+                Object {
+                  "Fn::GetAtt": Array [
+                    "BenchmarkServiceAutoscalerDBAvailabilityZoneAwarenessCustomResourceDBAvailabilityZoneAwarenessIsCompleteFn453790C4",
+                    "Arn",
+                  ],
+                },
+                Object {
+                  "Fn::Join": Array [
+                    "",
+                    Array [
+                      Object {
+                        "Fn::GetAtt": Array [
+                          "BenchmarkServiceAutoscalerDBAvailabilityZoneAwarenessCustomResourceDBAvailabilityZoneAwarenessIsCompleteFn453790C4",
+                          "Arn",
+                        ],
+                      },
+                      ":*",
+                    ],
+                  ],
+                },
+              ],
+            },
+            Object {
+              "Action": "states:StartExecution",
+              "Effect": "Allow",
+              "Resource": Object {
+                "Ref": "BenchmarkServiceAutoscalerDBAvailabilityZoneAwarenessCustomResourceProviderwaiterstatemachineAE201AFA",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "BenchmarkServiceAutoscalerDBAvailabilityZoneAwarenessCustomResourceProviderframeworkonEventServiceRoleDefaultPolicy184879B1",
+        "Roles": Array [
+          Object {
+            "Ref": "BenchmarkServiceAutoscalerDBAvailabilityZoneAwarenessCustomResourceProviderframeworkonEventServiceRole257D58C0",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "BenchmarkServiceAutoscalerDBAvailabilityZoneAwarenessCustomResourceProviderframeworkonTimeout40D1DC60": Object {
+      "DependsOn": Array [
+        "BenchmarkServiceAutoscalerDBAvailabilityZoneAwarenessCustomResourceProviderframeworkonTimeoutServiceRoleDefaultPolicyA1F180A3",
+        "BenchmarkServiceAutoscalerDBAvailabilityZoneAwarenessCustomResourceProviderframeworkonTimeoutServiceRole5E82693A",
+      ],
+      "Properties": Object {
+        "Code": Object {
+          "S3Bucket": Object {
+            "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
+          },
+          "S3Key": "eaeb69bc290b516fe3b049f89d6118b22249df682fbabf56af300cf345198574.zip",
+        },
+        "Description": "AWS CDK resource provider framework - onTimeout (test/BenchmarkService/Autoscaler/DBAvailabilityZoneAwarenessCustomResource/Provider)",
+        "Environment": Object {
+          "Variables": Object {
+            "USER_IS_COMPLETE_FUNCTION_ARN": Object {
+              "Fn::GetAtt": Array [
+                "BenchmarkServiceAutoscalerDBAvailabilityZoneAwarenessCustomResourceDBAvailabilityZoneAwarenessIsCompleteFn453790C4",
+                "Arn",
+              ],
+            },
+            "USER_ON_EVENT_FUNCTION_ARN": Object {
+              "Fn::GetAtt": Array [
+                "BenchmarkServiceAutoscalerDBAvailabilityZoneAwarenessCustomResourceDBAvailabilityZoneAwarenessOnEventFnD842F238",
+                "Arn",
+              ],
+            },
+          },
+        },
+        "Handler": "framework.onTimeout",
+        "Role": Object {
+          "Fn::GetAtt": Array [
+            "BenchmarkServiceAutoscalerDBAvailabilityZoneAwarenessCustomResourceProviderframeworkonTimeoutServiceRole5E82693A",
+            "Arn",
+          ],
+        },
+        "Runtime": "nodejs12.x",
+        "Timeout": 900,
+      },
+      "Type": "AWS::Lambda::Function",
+    },
+    "BenchmarkServiceAutoscalerDBAvailabilityZoneAwarenessCustomResourceProviderframeworkonTimeoutServiceRole5E82693A": Object {
+      "Properties": Object {
+        "AssumeRolePolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": Object {
+                "Service": "lambda.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "ManagedPolicyArns": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:",
+                Object {
+                  "Ref": "AWS::Partition",
+                },
+                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+              ],
+            ],
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "BenchmarkServiceAutoscalerDBAvailabilityZoneAwarenessCustomResourceProviderframeworkonTimeoutServiceRoleDefaultPolicyA1F180A3": Object {
+      "Properties": Object {
+        "PolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": "lambda:InvokeFunction",
+              "Effect": "Allow",
+              "Resource": Array [
+                Object {
+                  "Fn::GetAtt": Array [
+                    "BenchmarkServiceAutoscalerDBAvailabilityZoneAwarenessCustomResourceDBAvailabilityZoneAwarenessOnEventFnD842F238",
+                    "Arn",
+                  ],
+                },
+                Object {
+                  "Fn::Join": Array [
+                    "",
+                    Array [
+                      Object {
+                        "Fn::GetAtt": Array [
+                          "BenchmarkServiceAutoscalerDBAvailabilityZoneAwarenessCustomResourceDBAvailabilityZoneAwarenessOnEventFnD842F238",
+                          "Arn",
+                        ],
+                      },
+                      ":*",
+                    ],
+                  ],
+                },
+              ],
+            },
+            Object {
+              "Action": "lambda:InvokeFunction",
+              "Effect": "Allow",
+              "Resource": Array [
+                Object {
+                  "Fn::GetAtt": Array [
+                    "BenchmarkServiceAutoscalerDBAvailabilityZoneAwarenessCustomResourceDBAvailabilityZoneAwarenessIsCompleteFn453790C4",
+                    "Arn",
+                  ],
+                },
+                Object {
+                  "Fn::Join": Array [
+                    "",
+                    Array [
+                      Object {
+                        "Fn::GetAtt": Array [
+                          "BenchmarkServiceAutoscalerDBAvailabilityZoneAwarenessCustomResourceDBAvailabilityZoneAwarenessIsCompleteFn453790C4",
+                          "Arn",
+                        ],
+                      },
+                      ":*",
+                    ],
+                  ],
+                },
+              ],
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "BenchmarkServiceAutoscalerDBAvailabilityZoneAwarenessCustomResourceProviderframeworkonTimeoutServiceRoleDefaultPolicyA1F180A3",
+        "Roles": Array [
+          Object {
+            "Ref": "BenchmarkServiceAutoscalerDBAvailabilityZoneAwarenessCustomResourceProviderframeworkonTimeoutServiceRole5E82693A",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "BenchmarkServiceAutoscalerDBAvailabilityZoneAwarenessCustomResourceProviderwaiterstatemachineAE201AFA": Object {
+      "DependsOn": Array [
+        "BenchmarkServiceAutoscalerDBAvailabilityZoneAwarenessCustomResourceProviderwaiterstatemachineRoleDefaultPolicyA3AC91DC",
+        "BenchmarkServiceAutoscalerDBAvailabilityZoneAwarenessCustomResourceProviderwaiterstatemachineRole4B189813",
+      ],
+      "Properties": Object {
+        "DefinitionString": Object {
+          "Fn::Join": Array [
+            "",
+            Array [
+              "{\\"StartAt\\":\\"framework-isComplete-task\\",\\"States\\":{\\"framework-isComplete-task\\":{\\"End\\":true,\\"Retry\\":[{\\"ErrorEquals\\":[\\"States.ALL\\"],\\"IntervalSeconds\\":5,\\"MaxAttempts\\":360,\\"BackoffRate\\":1}],\\"Catch\\":[{\\"ErrorEquals\\":[\\"States.ALL\\"],\\"Next\\":\\"framework-onTimeout-task\\"}],\\"Type\\":\\"Task\\",\\"Resource\\":\\"",
+              Object {
+                "Fn::GetAtt": Array [
+                  "BenchmarkServiceAutoscalerDBAvailabilityZoneAwarenessCustomResourceProviderframeworkisComplete76F74455",
+                  "Arn",
+                ],
+              },
+              "\\"},\\"framework-onTimeout-task\\":{\\"End\\":true,\\"Type\\":\\"Task\\",\\"Resource\\":\\"",
+              Object {
+                "Fn::GetAtt": Array [
+                  "BenchmarkServiceAutoscalerDBAvailabilityZoneAwarenessCustomResourceProviderframeworkonTimeout40D1DC60",
+                  "Arn",
+                ],
+              },
+              "\\"}}}",
+            ],
+          ],
+        },
+        "RoleArn": Object {
+          "Fn::GetAtt": Array [
+            "BenchmarkServiceAutoscalerDBAvailabilityZoneAwarenessCustomResourceProviderwaiterstatemachineRole4B189813",
+            "Arn",
+          ],
+        },
+      },
+      "Type": "AWS::StepFunctions::StateMachine",
+    },
+    "BenchmarkServiceAutoscalerDBAvailabilityZoneAwarenessCustomResourceProviderwaiterstatemachineRole4B189813": Object {
+      "Properties": Object {
+        "AssumeRolePolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": Object {
+                "Service": Object {
+                  "Fn::FindInMap": Array [
+                    "ServiceprincipalMap",
+                    Object {
+                      "Ref": "AWS::Region",
+                    },
+                    "states",
+                  ],
+                },
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "BenchmarkServiceAutoscalerDBAvailabilityZoneAwarenessCustomResourceProviderwaiterstatemachineRoleDefaultPolicyA3AC91DC": Object {
+      "Properties": Object {
+        "PolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": "lambda:InvokeFunction",
+              "Effect": "Allow",
+              "Resource": Array [
+                Object {
+                  "Fn::GetAtt": Array [
+                    "BenchmarkServiceAutoscalerDBAvailabilityZoneAwarenessCustomResourceProviderframeworkisComplete76F74455",
+                    "Arn",
+                  ],
+                },
+                Object {
+                  "Fn::Join": Array [
+                    "",
+                    Array [
+                      Object {
+                        "Fn::GetAtt": Array [
+                          "BenchmarkServiceAutoscalerDBAvailabilityZoneAwarenessCustomResourceProviderframeworkisComplete76F74455",
+                          "Arn",
+                        ],
+                      },
+                      ":*",
+                    ],
+                  ],
+                },
+              ],
+            },
+            Object {
+              "Action": "lambda:InvokeFunction",
+              "Effect": "Allow",
+              "Resource": Array [
+                Object {
+                  "Fn::GetAtt": Array [
+                    "BenchmarkServiceAutoscalerDBAvailabilityZoneAwarenessCustomResourceProviderframeworkonTimeout40D1DC60",
+                    "Arn",
+                  ],
+                },
+                Object {
+                  "Fn::Join": Array [
+                    "",
+                    Array [
+                      Object {
+                        "Fn::GetAtt": Array [
+                          "BenchmarkServiceAutoscalerDBAvailabilityZoneAwarenessCustomResourceProviderframeworkonTimeout40D1DC60",
+                          "Arn",
+                        ],
+                      },
+                      ":*",
+                    ],
+                  ],
+                },
+              ],
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "BenchmarkServiceAutoscalerDBAvailabilityZoneAwarenessCustomResourceProviderwaiterstatemachineRoleDefaultPolicyA3AC91DC",
+        "Roles": Array [
+          Object {
+            "Ref": "BenchmarkServiceAutoscalerDBAvailabilityZoneAwarenessCustomResourceProviderwaiterstatemachineRole4B189813",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
     },
     "BenchmarkServiceAutoscalerPolicy351DE57F": Object {
       "Properties": Object {
@@ -1550,6 +1554,10 @@ sudo chmod +x /home/ec2-user/benchmark/*.sh",
             "Key": "Name",
             "Value": "test/Vpc/applicationSubnet1",
           },
+          Object {
+            "Key": "subnet-type",
+            "Value": "private",
+          },
         ],
         "VpcId": Object {
           "Ref": "Vpc8378EB38",
@@ -1582,6 +1590,10 @@ sudo chmod +x /home/ec2-user/benchmark/*.sh",
             "Key": "Name",
             "Value": "test/Vpc/applicationSubnet1",
           },
+          Object {
+            "Key": "subnet-type",
+            "Value": "private",
+          },
         ],
         "VpcId": Object {
           "Ref": "Vpc8378EB38",
@@ -1607,6 +1619,10 @@ sudo chmod +x /home/ec2-user/benchmark/*.sh",
           Object {
             "Key": "Name",
             "Value": "test/Vpc/applicationSubnet2",
+          },
+          Object {
+            "Key": "subnet-type",
+            "Value": "private",
           },
         ],
         "VpcId": Object {
@@ -1650,6 +1666,10 @@ sudo chmod +x /home/ec2-user/benchmark/*.sh",
           Object {
             "Key": "Name",
             "Value": "test/Vpc/applicationSubnet2",
+          },
+          Object {
+            "Key": "subnet-type",
+            "Value": "private",
           },
         ],
         "VpcId": Object {

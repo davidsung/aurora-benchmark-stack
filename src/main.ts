@@ -1,4 +1,4 @@
-import { App, Stack, StackProps, CfnOutput, Token } from 'aws-cdk-lib';
+import { App, Stack, StackProps, CfnOutput, Token, Tags } from 'aws-cdk-lib';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as rds from 'aws-cdk-lib/aws-rds';
 import { Construct } from 'constructs';
@@ -25,7 +25,7 @@ export interface BenchmarkDbStackProps extends StackProps {
   readonly computeInstanceType?: ec2.InstanceType;
   readonly computeAutoscalerMinCapacity?: number;
   readonly computeAutoscalerMaxCapacity?: number;
-  // readonly computeAutoscalerDesiredCapacity?: number;
+  readonly computeAutoscalerDesiredCapacity?: number;
   readonly computeUseSpot?: boolean;
   readonly computeAutoscalerTags?: {
     [key: string]: string;
@@ -65,6 +65,10 @@ export class BenchmarkDbStack extends Stack {
       ],
     });
 
+    vpc.privateSubnets.forEach(subnet => {
+      Tags.of(subnet).add('subnet-type', 'private');
+    });
+
     const benchmarkService = new BenchmarkService(this, 'BenchmarkService', {
       vpc,
       dbVpcSubnets: { subnetType: ec2.SubnetType.PRIVATE_ISOLATED },
@@ -78,7 +82,7 @@ export class BenchmarkDbStack extends Stack {
       computeInstanceType: props.computeInstanceType,
       computeMinSize: props.computeAutoscalerMinCapacity,
       computeMaxSize: props.computeAutoscalerMaxCapacity,
-      // computeDesiredCapacity: props.computeAutoscalerDesiredCapacity,
+      computeDesiredCapacity: props.computeAutoscalerDesiredCapacity,
       computeUseSpot: props.computeUseSpot,
       computeTags: props.computeAutoscalerTags,
       pgBenchScaleFactor: 10000,
@@ -127,11 +131,6 @@ export class BenchmarkDbStack extends Stack {
         value: benchmarkService.dbSecretName,
       });
     }
-    if (benchmarkService.dbWriterAZ) {
-      new CfnOutput(this, 'DBWriterAZ', {
-        value: benchmarkService.dbWriterAZ,
-      });
-    }
     if (benchmarkService.pgInitDocument) {
       new CfnOutput(this, 'PgbenchInit', {
         value: benchmarkService.pgInitDocument,
@@ -178,7 +177,7 @@ new BenchmarkDbStack(app, 'aurora-benchmark-stack', {
     'rds.logical_replication': '1',
     'wal_sender_timeout': '0',
   },
-  computeInstanceType: ec2.InstanceType.of(ec2.InstanceClass.C6I, ec2.InstanceSize.XLARGE8),
+  computeInstanceType: ec2.InstanceType.of(ec2.InstanceClass.C5, ec2.InstanceSize.XLARGE9),
   computeAutoscalerMaxCapacity: 1,
   // computeAutoscalerDesiredCapacity: 1,
   computeUseSpot: true,

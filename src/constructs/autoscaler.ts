@@ -3,8 +3,10 @@ import { Stack, Tags } from 'aws-cdk-lib';
 import * as autoscaling from 'aws-cdk-lib/aws-autoscaling';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as iam from 'aws-cdk-lib/aws-iam';
+import * as rds from 'aws-cdk-lib/aws-rds';
 import { Asset } from 'aws-cdk-lib/aws-s3-assets';
 import { Construct } from 'constructs';
+import { DBAvailabilityZoneAwarenessCustomResource } from './db-az-awareness-custom-resource';
 
 const DEFAULT_INSTANCE_TYPE: ec2.InstanceType = ec2.InstanceType.of(ec2.InstanceClass.T3, ec2.InstanceSize.MICRO);
 const DEFAULT_MIN_SIZE: number = 1;
@@ -20,8 +22,9 @@ const DEFAULT_AUTOSCALER_TAGS: { [key: string]: string } = {
 export interface AutoscalerProps {
   readonly asgName?: string;
   readonly vpc: ec2.IVpc;
-  readonly vpcSubnets?: ec2.SubnetSelection;
-  // readonly azCustomResource: CustomResource;
+  readonly dbEngineVersion: rds.AuroraPostgresEngineVersion | rds.PostgresEngineVersion;
+  readonly clusterIdentifier?: string;
+  readonly instanceIdentifier?: string;
   readonly availabilityZones?: string[];
   readonly instanceType?: ec2.InstanceType;
   readonly machineImage?: ec2.IMachineImage;
@@ -29,7 +32,7 @@ export interface AutoscalerProps {
   readonly detailedMonitoring?: boolean;
   readonly minSize?: number;
   readonly maxSize?: number;
-  // readonly desiredCapacity?: number;
+  readonly desiredCapacity?: number;
   readonly onDemandPercentageAboveBaseCapacity?: number;
   readonly tags?: {
     [key: string]: string;
@@ -41,7 +44,6 @@ export class Autoscaler extends Construct implements ec2.IConnectable, iam.IGran
   private readonly instanceType: ec2.InstanceType;
   private readonly maxSize: number;
   private readonly minSize: number;
-  // private readonly desiredCapacity: number;
   private readonly role: iam.IRole;
   private readonly onDemandPercentageAboveBaseCapacity: number;
 
@@ -54,6 +56,13 @@ export class Autoscaler extends Construct implements ec2.IConnectable, iam.IGran
 
   constructor(scope: Construct, id: string, props: AutoscalerProps) {
     super(scope, id);
+
+    const azAwarenessCustomResource = new DBAvailabilityZoneAwarenessCustomResource(this, 'DBAvailabilityZoneAwarenessCustomResource', {
+      vpc: props.vpc,
+      dbEngineVersion: props.dbEngineVersion,
+      clusterIdentifier: props.clusterIdentifier,
+      instanceIdentifier: props.instanceIdentifier,
+    });
 
     // this._asgName = props.asgName ?? `${Stack.of(this).stackName}-autoscaler-asg`;
     this.instanceType = props.instanceType ?? DEFAULT_INSTANCE_TYPE;
@@ -131,13 +140,13 @@ export class Autoscaler extends Construct implements ec2.IConnectable, iam.IGran
 
     const asg = new autoscaling.AutoScalingGroup(this, 'Autoscaler', {
       vpc: props.vpc,
+      // Hacky way to suppress rendering Properties `VPCZoneIdentifier` by supplying empty azs
       vpcSubnets: {
-        availabilityZones: props.availabilityZones,
-        subnetType: ec2.SubnetType.PRIVATE_WITH_NAT,
+        availabilityZones: [],
       },
       minCapacity: this.minSize,
       maxCapacity: this.maxSize,
-      // desiredCapacity: this.desiredCapacity,
+      desiredCapacity: props.desiredCapacity,
       mixedInstancesPolicy: {
         launchTemplate: ec2LaunchTemplate,
         instancesDistribution: {
@@ -145,6 +154,9 @@ export class Autoscaler extends Construct implements ec2.IConnectable, iam.IGran
         },
       },
     });
+    // Hacky way to override the AutoScalingGroup VPCZoneIdentifier with desired subnet id obtained from custom resource
+    const cfnAsg = asg.node.defaultChild as autoscaling.CfnAutoScalingGroup;
+    cfnAsg.addPropertyOverride('VPCZoneIdentifier.0', azAwarenessCustomResource.getSubnetId());
 
     Object.keys(this.tags).forEach(k => {
       Tags.of(asg).add(k, this.tags![k]);

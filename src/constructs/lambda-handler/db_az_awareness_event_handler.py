@@ -3,6 +3,7 @@ import botocore
 import json
 
 rds = boto3.client('rds')
+ec2 = boto3.client('ec2')
 
 def on_event(event, context):
     print("Received event: " + json.dumps(event, indent=2))
@@ -35,7 +36,9 @@ def is_complete(event, context):
 
     request_type = event['RequestType'].lower()
     props = event['ResourceProperties']
+    vpc_id = props['VpcId']
     cluster_identifier = props['ClusterIdentifier']
+    # instance_identifier = props['InstanceIdentifier']
     
     if request_type == 'create':
         try:
@@ -55,9 +58,34 @@ def is_complete(event, context):
                     if len(writer_instances['DBInstances']) > 0:
                         if 'AvailabilityZone' in writer_instances['DBInstances'][0]:
                             print(f"Writer Availability Zone {writer_instances['DBInstances'][0]['AvailabilityZone']}")
+                            az = writer_instances['DBInstances'][0]['AvailabilityZone']
+                            subnets = ec2.describe_subnets(
+                                Filters=[
+                                    {
+                                        'Name': 'vpc-id',
+                                        'Values': [
+                                            vpc_id,
+                                        ]
+                                    },
+                                    {
+                                        'Name': 'availability-zone',
+                                        'Values': [
+                                            az,
+                                        ]
+                                    },
+                                    {
+                                        'Name': 'tag:subnet-type',
+                                        'Values': [
+                                            'private',
+                                        ]
+                                    },
+                                ],
+                            )
+                            subnet_id = subnets['Subnets'][0]['SubnetId']
                             return {
                                 'Data': {
-                                    'AvailabilityZone': writer_instances['DBInstances'][0]['AvailabilityZone'],
+                                    'AvailabilityZone': az,
+                                    'SubnetId': subnet_id,
                                 },
                                 'IsComplete': True
                             }
@@ -71,3 +99,24 @@ def is_complete(event, context):
         is_ready = True;
         
     return { 'IsComplete': is_ready }
+
+def get_cluster_members(cluster_identifier):
+    try:
+        clusters = rds.describe_db_clusters(
+            DBClusterIdentifier=cluster_identifier,
+        )
+        print(f"Found Cluster Members {clusters['DBClusters']}")
+    except rds.exceptions.DBClusterNotFoundFault as err:
+        raise err
+        
+    return clusters['DBClusters'][0]['DBClusterMembers']
+
+def get_instance_availability_zone(instance_identifier):
+    instances = rds.describe_db_instances(
+        DBInstanceIdentifier=instance_identifier,
+    )
+    print(f"Describe Instance {instances['DBInstances']}")
+    if len(instances['DBInstances']) > 0:
+        if 'AvailabilityZone' in instances['DBInstances'][0]:
+            print(f"Instance Availability Zone {instances['DBInstances'][0]['AvailabilityZone']}")
+            return instances['DBInstances'][0]['AvailabilityZone']
