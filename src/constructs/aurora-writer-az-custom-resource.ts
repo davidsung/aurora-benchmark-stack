@@ -5,15 +5,14 @@ import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as cr from 'aws-cdk-lib/custom-resources';
 import { Construct } from 'constructs';
 
-export interface AuroraWriterAZCustomResourceProps {
+export interface DBWriterAZCustomResourceProps {
   readonly clusterIdentifier: string;
 }
 
 export class AuroraWriterAZCustomResource extends Construct {
-  public readonly writerAvaibilityZone: string;
   public readonly customResource: CustomResource;
 
-  constructor(scope: Construct, id: string, props: AuroraWriterAZCustomResourceProps) {
+  constructor(scope: Construct, id: string, props: DBWriterAZCustomResourceProps) {
     super(scope, id);
 
     const role = new iam.Role(this, 'AuroraWriterAZRole', {
@@ -33,7 +32,7 @@ export class AuroraWriterAZCustomResource extends Construct {
 
     const onEventHandler = new lambda.Function(this, 'CustomResourceLambda', {
       runtime: lambda.Runtime.PYTHON_3_8,
-      handler: 'aurora_writer_az_event_handler.handler',
+      handler: 'aurora_writer_az_event_handler.on_event',
       code: lambda.Code.fromAsset(path.join(__dirname, 'lambda-handler')),
       role,
     });
@@ -56,8 +55,9 @@ export class AuroraWriterAZCustomResource extends Construct {
         ClusterIdentifier: props.clusterIdentifier,
       },
     });
+  }
 
-    this.writerAvaibilityZone = this.customResource.getAttString('AvailabilityZone');
-
+  public getWriterAvailabilityZone() {
+    return this.customResource.getAttString('AvailabilityZone');
   }
 }

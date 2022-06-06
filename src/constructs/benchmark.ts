@@ -130,7 +130,6 @@ export class BenchmarkService extends Construct {
         instances: this.createReplica ? 2 : 1,
         storageEncryptionKey,
         performanceInsightEncryptionKey,
-        // autoscaler,
         defaultDatabaseName: this.databaseName,
         clusterParameters: props.dbParameters,
         snapshotBeforeDestroy: DEFAULT_SNAPSHOT_BEFORE_DESTROY,
@@ -148,26 +147,19 @@ export class BenchmarkService extends Construct {
       const auroraWriterAZ = new AuroraWriterAZCustomResource(this, 'AuroraWriterAZ', {
         clusterIdentifier: this.auroraPostgres.clusterIdentifier,
       });
-      this.dbWriterAZ = auroraWriterAZ.customResource.getAttString('AvailabilityZone');
+      this.dbWriterAZ = auroraWriterAZ.getWriterAvailabilityZone();
 
-      const { subnetIds } = props.vpc.selectSubnets({
-        availabilityZones: [auroraWriterAZ.customResource.getAttString('AvailabilityZone')],
-        subnetType: ec2.SubnetType.PRIVATE_WITH_NAT,
-      });
       const autoscaler = new Autoscaler(this, 'Autoscaler', {
         vpc: props.vpc,
-        availabilityZones: [auroraWriterAZ.customResource.getAttString('AvailabilityZone')],
-        subnetIds: subnetIds,
-        azCustomResource: auroraWriterAZ.customResource,
+        availabilityZones: [auroraWriterAZ.getWriterAvailabilityZone()],
         instanceType: props.computeInstanceType,
         asgName: props.computeAsgName,
         minSize: props.computeMinSize,
         maxSize: props.computeMaxSize,
-        desiredCapacity: props.computeDesiredCapacity,
+        // desiredCapacity: props.computeDesiredCapacity,
         onDemandPercentageAboveBaseCapacity: this.computeOnDemandPercentageAboveBaseCapacity,
         tags: props.computeTags,
       });
-      autoscaler.node.addDependency(auroraWriterAZ.customResource);
       this.asgName = autoscaler.asgName;
 
       this.auroraPostgres.grantAccess(autoscaler);
@@ -263,7 +255,6 @@ export class BenchmarkService extends Construct {
         instanceType: props.dbInstanceType,
         storageEncryptionKey,
         performanceInsightEncryptionKey,
-        // autoscaler,
         multiAz: props.dbMultiAz,
         iops: props.dbIops,
         storageType: props.dbStorageType,

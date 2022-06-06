@@ -32,6 +32,8 @@ jspm_packages/
 .cache
 .DS_Store
 .vscode
+scripts/custom*.sql
+stack.yaml
 !/.projenrc.js
 /test-reports/
 junit.xml

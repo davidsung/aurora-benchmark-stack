@@ -98,7 +98,9 @@ Object {
   },
   "Outputs": Object {
     "AsgName": Object {
-      "Value": "test-autoscaler-asg",
+      "Value": Object {
+        "Ref": "BenchmarkServiceAutoscalerASG4E12DE6C",
+      },
     },
     "CustomTx": Object {
       "Value": Object {
@@ -233,7 +235,11 @@ Object {
         "Fn::Join": Array [
           "",
           Array [
-            "aws ssm send-command --targets   --instance-ids $(aws autoscaling describe-auto-scaling-groups --auto-scaling-group-names test-autoscaler-asg | jq -r \\".AutoScalingGroups[].Instances | first .InstanceId\\")   --document-name \\"AWS-RunShellScript\\"   --document-version \\"1\\"   --parameters '{\\"workingDirectory\\":[\\"\\"],\\"executionTimeout\\":[\\"3600\\"],\\"commands\\":[\\"export STACK_NAME=test\\",\\"export BENCHMARK_SCALE_FACTOR=10000\\",\\"export BENCHMARK_FILL_FACTOR=90\\",\\"cd /home/ec2-user/benchmark/\\",\\"source /home/ec2-user/benchmark/postgres_writer_env.sh\\",\\"nohup /home/ec2-user/benchmark/benchmark_init.sh 2>&1 &\\"]}'   --timeout-seconds 600   --cloud-watch-output-config '{\\"CloudWatchLogGroupName\\":\\"",
+            "aws ssm send-command --targets   --instance-ids $(aws autoscaling describe-auto-scaling-groups --auto-scaling-group-names ",
+            Object {
+              "Ref": "BenchmarkServiceAutoscalerASG4E12DE6C",
+            },
+            " | jq -r \\".AutoScalingGroups[].Instances | first .InstanceId\\")   --document-name \\"AWS-RunShellScript\\"   --document-version \\"1\\"   --parameters '{\\"workingDirectory\\":[\\"\\"],\\"executionTimeout\\":[\\"3600\\"],\\"commands\\":[\\"export STACK_NAME=test\\",\\"export BENCHMARK_SCALE_FACTOR=10000\\",\\"export BENCHMARK_FILL_FACTOR=90\\",\\"cd /home/ec2-user/benchmark/\\",\\"source /home/ec2-user/benchmark/postgres_writer_env.sh\\",\\"nohup /home/ec2-user/benchmark/benchmark_init.sh 2>&1 &\\"]}'   --timeout-seconds 600   --cloud-watch-output-config '{\\"CloudWatchLogGroupName\\":\\"",
             Object {
               "Ref": "BenchmarkServiceLogGroupD6F7E1F0",
             },
@@ -501,9 +507,9 @@ Object {
           "S3Bucket": Object {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "68ee67dbfc3af3b8c1a8adb8fae7da5d7749371cd41f904444c603f67e46eb57.zip",
+          "S3Key": "b0915f861424d414eb75bc4ea81c4da70f8bd193758ee3ecdc48bf0f450f3c81.zip",
         },
-        "Handler": "aurora_writer_az_event_handler.handler",
+        "Handler": "aurora_writer_az_event_handler.on_event",
         "Role": Object {
           "Fn::GetAtt": Array [
             "BenchmarkServiceAuroraWriterAZAuroraWriterAZRole43902C49",
@@ -524,7 +530,7 @@ Object {
           "S3Bucket": Object {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "885e74c18034f7d2833ec7129bb76a442e75d84f9c21ce7990bbb3aea67ab779.zip",
+          "S3Key": "eaeb69bc290b516fe3b049f89d6118b22249df682fbabf56af300cf345198574.zip",
         },
         "Description": "AWS CDK resource provider framework - isComplete (test/BenchmarkService/AuroraWriterAZ/Provider)",
         "Environment": Object {
@@ -593,22 +599,54 @@ Object {
             Object {
               "Action": "lambda:InvokeFunction",
               "Effect": "Allow",
-              "Resource": Object {
-                "Fn::GetAtt": Array [
-                  "BenchmarkServiceAuroraWriterAZCustomResourceLambda10941483",
-                  "Arn",
-                ],
-              },
+              "Resource": Array [
+                Object {
+                  "Fn::GetAtt": Array [
+                    "BenchmarkServiceAuroraWriterAZCustomResourceLambda10941483",
+                    "Arn",
+                  ],
+                },
+                Object {
+                  "Fn::Join": Array [
+                    "",
+                    Array [
+                      Object {
+                        "Fn::GetAtt": Array [
+                          "BenchmarkServiceAuroraWriterAZCustomResourceLambda10941483",
+                          "Arn",
+                        ],
+                      },
+                      ":*",
+                    ],
+                  ],
+                },
+              ],
             },
             Object {
               "Action": "lambda:InvokeFunction",
               "Effect": "Allow",
-              "Resource": Object {
-                "Fn::GetAtt": Array [
-                  "BenchmarkServiceAuroraWriterAZRDSGetWriterAZIsCompleteFn108C5988",
-                  "Arn",
-                ],
-              },
+              "Resource": Array [
+                Object {
+                  "Fn::GetAtt": Array [
+                    "BenchmarkServiceAuroraWriterAZRDSGetWriterAZIsCompleteFn108C5988",
+                    "Arn",
+                  ],
+                },
+                Object {
+                  "Fn::Join": Array [
+                    "",
+                    Array [
+                      Object {
+                        "Fn::GetAtt": Array [
+                          "BenchmarkServiceAuroraWriterAZRDSGetWriterAZIsCompleteFn108C5988",
+                          "Arn",
+                        ],
+                      },
+                      ":*",
+                    ],
+                  ],
+                },
+              ],
             },
           ],
           "Version": "2012-10-17",
@@ -632,7 +670,7 @@ Object {
           "S3Bucket": Object {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "885e74c18034f7d2833ec7129bb76a442e75d84f9c21ce7990bbb3aea67ab779.zip",
+          "S3Key": "eaeb69bc290b516fe3b049f89d6118b22249df682fbabf56af300cf345198574.zip",
         },
         "Description": "AWS CDK resource provider framework - onEvent (test/BenchmarkService/AuroraWriterAZ/Provider)",
         "Environment": Object {
@@ -704,22 +742,54 @@ Object {
             Object {
               "Action": "lambda:InvokeFunction",
               "Effect": "Allow",
-              "Resource": Object {
-                "Fn::GetAtt": Array [
-                  "BenchmarkServiceAuroraWriterAZCustomResourceLambda10941483",
-                  "Arn",
-                ],
-              },
+              "Resource": Array [
+                Object {
+                  "Fn::GetAtt": Array [
+                    "BenchmarkServiceAuroraWriterAZCustomResourceLambda10941483",
+                    "Arn",
+                  ],
+                },
+                Object {
+                  "Fn::Join": Array [
+                    "",
+                    Array [
+                      Object {
+                        "Fn::GetAtt": Array [
+                          "BenchmarkServiceAuroraWriterAZCustomResourceLambda10941483",
+                          "Arn",
+                        ],
+                      },
+                      ":*",
+                    ],
+                  ],
+                },
+              ],
             },
             Object {
               "Action": "lambda:InvokeFunction",
               "Effect": "Allow",
-              "Resource": Object {
-                "Fn::GetAtt": Array [
-                  "BenchmarkServiceAuroraWriterAZRDSGetWriterAZIsCompleteFn108C5988",
-                  "Arn",
-                ],
-              },
+              "Resource": Array [
+                Object {
+                  "Fn::GetAtt": Array [
+                    "BenchmarkServiceAuroraWriterAZRDSGetWriterAZIsCompleteFn108C5988",
+                    "Arn",
+                  ],
+                },
+                Object {
+                  "Fn::Join": Array [
+                    "",
+                    Array [
+                      Object {
+                        "Fn::GetAtt": Array [
+                          "BenchmarkServiceAuroraWriterAZRDSGetWriterAZIsCompleteFn108C5988",
+                          "Arn",
+                        ],
+                      },
+                      ":*",
+                    ],
+                  ],
+                },
+              ],
             },
             Object {
               "Action": "states:StartExecution",
@@ -750,7 +820,7 @@ Object {
           "S3Bucket": Object {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "885e74c18034f7d2833ec7129bb76a442e75d84f9c21ce7990bbb3aea67ab779.zip",
+          "S3Key": "eaeb69bc290b516fe3b049f89d6118b22249df682fbabf56af300cf345198574.zip",
         },
         "Description": "AWS CDK resource provider framework - onTimeout (test/BenchmarkService/AuroraWriterAZ/Provider)",
         "Environment": Object {
@@ -819,22 +889,54 @@ Object {
             Object {
               "Action": "lambda:InvokeFunction",
               "Effect": "Allow",
-              "Resource": Object {
-                "Fn::GetAtt": Array [
-                  "BenchmarkServiceAuroraWriterAZCustomResourceLambda10941483",
-                  "Arn",
-                ],
-              },
+              "Resource": Array [
+                Object {
+                  "Fn::GetAtt": Array [
+                    "BenchmarkServiceAuroraWriterAZCustomResourceLambda10941483",
+                    "Arn",
+                  ],
+                },
+                Object {
+                  "Fn::Join": Array [
+                    "",
+                    Array [
+                      Object {
+                        "Fn::GetAtt": Array [
+                          "BenchmarkServiceAuroraWriterAZCustomResourceLambda10941483",
+                          "Arn",
+                        ],
+                      },
+                      ":*",
+                    ],
+                  ],
+                },
+              ],
             },
             Object {
               "Action": "lambda:InvokeFunction",
               "Effect": "Allow",
-              "Resource": Object {
-                "Fn::GetAtt": Array [
-                  "BenchmarkServiceAuroraWriterAZRDSGetWriterAZIsCompleteFn108C5988",
-                  "Arn",
-                ],
-              },
+              "Resource": Array [
+                Object {
+                  "Fn::GetAtt": Array [
+                    "BenchmarkServiceAuroraWriterAZRDSGetWriterAZIsCompleteFn108C5988",
+                    "Arn",
+                  ],
+                },
+                Object {
+                  "Fn::Join": Array [
+                    "",
+                    Array [
+                      Object {
+                        "Fn::GetAtt": Array [
+                          "BenchmarkServiceAuroraWriterAZRDSGetWriterAZIsCompleteFn108C5988",
+                          "Arn",
+                        ],
+                      },
+                      ":*",
+                    ],
+                  ],
+                },
+              ],
             },
           ],
           "Version": "2012-10-17",
@@ -917,22 +1019,54 @@ Object {
             Object {
               "Action": "lambda:InvokeFunction",
               "Effect": "Allow",
-              "Resource": Object {
-                "Fn::GetAtt": Array [
-                  "BenchmarkServiceAuroraWriterAZProviderframeworkisComplete49D7D905",
-                  "Arn",
-                ],
-              },
+              "Resource": Array [
+                Object {
+                  "Fn::GetAtt": Array [
+                    "BenchmarkServiceAuroraWriterAZProviderframeworkisComplete49D7D905",
+                    "Arn",
+                  ],
+                },
+                Object {
+                  "Fn::Join": Array [
+                    "",
+                    Array [
+                      Object {
+                        "Fn::GetAtt": Array [
+                          "BenchmarkServiceAuroraWriterAZProviderframeworkisComplete49D7D905",
+                          "Arn",
+                        ],
+                      },
+                      ":*",
+                    ],
+                  ],
+                },
+              ],
             },
             Object {
               "Action": "lambda:InvokeFunction",
               "Effect": "Allow",
-              "Resource": Object {
-                "Fn::GetAtt": Array [
-                  "BenchmarkServiceAuroraWriterAZProviderframeworkonTimeout1329B573",
-                  "Arn",
-                ],
-              },
+              "Resource": Array [
+                Object {
+                  "Fn::GetAtt": Array [
+                    "BenchmarkServiceAuroraWriterAZProviderframeworkonTimeout1329B573",
+                    "Arn",
+                  ],
+                },
+                Object {
+                  "Fn::Join": Array [
+                    "",
+                    Array [
+                      Object {
+                        "Fn::GetAtt": Array [
+                          "BenchmarkServiceAuroraWriterAZProviderframeworkonTimeout1329B573",
+                          "Arn",
+                        ],
+                      },
+                      ":*",
+                    ],
+                  ],
+                },
+              ],
             },
           ],
           "Version": "2012-10-17",
@@ -956,7 +1090,7 @@ Object {
           "S3Bucket": Object {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "68ee67dbfc3af3b8c1a8adb8fae7da5d7749371cd41f904444c603f67e46eb57.zip",
+          "S3Key": "b0915f861424d414eb75bc4ea81c4da70f8bd193758ee3ecdc48bf0f450f3c81.zip",
         },
         "Handler": "aurora_writer_az_is_complete_handler.is_complete",
         "Role": Object {
@@ -985,10 +1119,45 @@ Object {
       "Type": "AWS::CloudFormation::CustomResource",
       "UpdateReplacePolicy": "Delete",
     },
+    "BenchmarkServiceAutoscalerASG4E12DE6C": Object {
+      "Properties": Object {
+        "MaxSize": "1",
+        "MinSize": "1",
+        "MixedInstancesPolicy": Object {
+          "InstancesDistribution": Object {
+            "OnDemandPercentageAboveBaseCapacity": 100,
+          },
+          "LaunchTemplate": Object {
+            "LaunchTemplateSpecification": Object {
+              "LaunchTemplateId": Object {
+                "Ref": "BenchmarkServiceAutoscalerAutoscalerLaunchTemplate820DF0DF",
+              },
+              "Version": Object {
+                "Fn::GetAtt": Array [
+                  "BenchmarkServiceAutoscalerAutoscalerLaunchTemplate820DF0DF",
+                  "LatestVersionNumber",
+                ],
+              },
+            },
+          },
+        },
+        "Tags": Array [
+          Object {
+            "Key": "benchmark",
+            "PropagateAtLaunch": true,
+            "Value": "transaction_group",
+          },
+        ],
+        "VPCZoneIdentifier": Array [],
+      },
+      "Type": "AWS::AutoScaling::AutoScalingGroup",
+      "UpdatePolicy": Object {
+        "AutoScalingScheduledAction": Object {
+          "IgnoreUnmodifiedGroupSizeProperties": true,
+        },
+      },
+    },
     "BenchmarkServiceAutoscalerAutoscalerLaunchTemplate820DF0DF": Object {
-      "DependsOn": Array [
-        "BenchmarkServiceAuroraWriterAZWriterAvailabilityZoneCustomResourceFAC87A23",
-      ],
       "Properties": Object {
         "LaunchTemplateData": Object {
           "IamInstanceProfile": Object {
@@ -1044,12 +1213,12 @@ sudo amazon-linux-extras install postgresql12
 sudo yum install -y jq postgresql-contrib
 mkdir /home/ec2-user/benchmark
 cd /home/ec2-user/benchmark
-mkdir -p $(dirname '/home/ec2-user/benchmark/efba501e980a21d1b6db33d5d29e44af9f543245636fccfbc143777672c1f4d7.zip')
+mkdir -p $(dirname '/home/ec2-user/benchmark/7f106e490d89c6a00f3bec3d113fe46746d85c6c58760347946e8814997b9f65.zip')
 aws s3 cp 's3://",
                   Object {
                     "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
                   },
-                  "/efba501e980a21d1b6db33d5d29e44af9f543245636fccfbc143777672c1f4d7.zip' '/home/ec2-user/benchmark/efba501e980a21d1b6db33d5d29e44af9f543245636fccfbc143777672c1f4d7.zip'
+                  "/7f106e490d89c6a00f3bec3d113fe46746d85c6c58760347946e8814997b9f65.zip' '/home/ec2-user/benchmark/7f106e490d89c6a00f3bec3d113fe46746d85c6c58760347946e8814997b9f65.zip'
 aws configure set region ",
                   Object {
                     "Ref": "AWS::Region",
@@ -1057,7 +1226,7 @@ aws configure set region ",
                   "
 cp -r /root/.aws /home/ec2-user/
 sudo chown -R ec2-user: /home/ec2-user/.aws
-unzip efba501e980a21d1b6db33d5d29e44af9f543245636fccfbc143777672c1f4d7.zip
+unzip 7f106e490d89c6a00f3bec3d113fe46746d85c6c58760347946e8814997b9f65.zip
 cp -f /home/ec2-user/benchmark/ulimits.conf /etc/security/limits.conf
 sudo chown -R ec2-user: /home/ec2-user/benchmark
 sudo chmod +x /home/ec2-user/benchmark/*.sh",
@@ -1070,9 +1239,6 @@ sudo chmod +x /home/ec2-user/benchmark/*.sh",
       "Type": "AWS::EC2::LaunchTemplate",
     },
     "BenchmarkServiceAutoscalerAutoscalerLaunchTemplateProfileA892EE0B": Object {
-      "DependsOn": Array [
-        "BenchmarkServiceAuroraWriterAZWriterAvailabilityZoneCustomResourceFAC87A23",
-      ],
       "Properties": Object {
         "Roles": Array [
           Object {
@@ -1083,9 +1249,6 @@ sudo chmod +x /home/ec2-user/benchmark/*.sh",
       "Type": "AWS::IAM::InstanceProfile",
     },
     "BenchmarkServiceAutoscalerAutoscalerSecurityGroup3B06825E": Object {
-      "DependsOn": Array [
-        "BenchmarkServiceAuroraWriterAZWriterAvailabilityZoneCustomResourceFAC87A23",
-      ],
       "Properties": Object {
         "GroupDescription": "test/BenchmarkService/Autoscaler/AutoscalerSecurityGroup",
         "SecurityGroupEgress": Array [
@@ -1101,61 +1264,7 @@ sudo chmod +x /home/ec2-user/benchmark/*.sh",
       },
       "Type": "AWS::EC2::SecurityGroup",
     },
-    "BenchmarkServiceAutoscalerDD67FE7A": Object {
-      "DependsOn": Array [
-        "BenchmarkServiceAuroraWriterAZWriterAvailabilityZoneCustomResourceFAC87A23",
-      ],
-      "Properties": Object {
-        "AutoScalingGroupName": "test-autoscaler-asg",
-        "AvailabilityZones": Array [
-          Object {
-            "Fn::GetAtt": Array [
-              "BenchmarkServiceAuroraWriterAZWriterAvailabilityZoneCustomResourceFAC87A23",
-              "AvailabilityZone",
-            ],
-          },
-        ],
-        "DesiredCapacity": "1",
-        "MaxSize": "1",
-        "MinSize": "1",
-        "MixedInstancesPolicy": Object {
-          "InstancesDistribution": Object {
-            "OnDemandPercentageAboveBaseCapacity": 100,
-          },
-          "LaunchTemplate": Object {
-            "LaunchTemplateSpecification": Object {
-              "LaunchTemplateId": Object {
-                "Ref": "BenchmarkServiceAutoscalerAutoscalerLaunchTemplate820DF0DF",
-              },
-              "Version": Object {
-                "Fn::GetAtt": Array [
-                  "BenchmarkServiceAutoscalerAutoscalerLaunchTemplate820DF0DF",
-                  "LatestVersionNumber",
-                ],
-              },
-            },
-            "Overrides": Array [
-              Object {
-                "InstanceType": "t3.micro",
-              },
-            ],
-          },
-        },
-        "Tags": Array [
-          Object {
-            "Key": "benchmark",
-            "PropagateAtLaunch": true,
-            "Value": "transaction_group",
-          },
-        ],
-        "VPCZoneIdentifier": Array [],
-      },
-      "Type": "AWS::AutoScaling::AutoScalingGroup",
-    },
     "BenchmarkServiceAutoscalerPolicy351DE57F": Object {
-      "DependsOn": Array [
-        "BenchmarkServiceAuroraWriterAZWriterAvailabilityZoneCustomResourceFAC87A23",
-      ],
       "Properties": Object {
         "PolicyDocument": Object {
           "Statement": Array [
@@ -1177,9 +1286,6 @@ sudo chmod +x /home/ec2-user/benchmark/*.sh",
       "Type": "AWS::IAM::Policy",
     },
     "BenchmarkServiceAutoscalerRoleAF8D0CDD": Object {
-      "DependsOn": Array [
-        "BenchmarkServiceAuroraWriterAZWriterAvailabilityZoneCustomResourceFAC87A23",
-      ],
       "Properties": Object {
         "AssumeRolePolicyDocument": Object {
           "Statement": Array [
@@ -1233,9 +1339,6 @@ sudo chmod +x /home/ec2-user/benchmark/*.sh",
       "Type": "AWS::IAM::Role",
     },
     "BenchmarkServiceAutoscalerRoleDefaultPolicy338718A2": Object {
-      "DependsOn": Array [
-        "BenchmarkServiceAuroraWriterAZWriterAvailabilityZoneCustomResourceFAC87A23",
-      ],
       "Properties": Object {
         "PolicyDocument": Object {
           "Statement": Array [

@@ -1,5 +1,5 @@
 import * as path from 'path';
-import { Stack, Tokenization, CustomResource } from 'aws-cdk-lib';
+import { Stack, Tags } from 'aws-cdk-lib';
 import * as autoscaling from 'aws-cdk-lib/aws-autoscaling';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as iam from 'aws-cdk-lib/aws-iam';
@@ -7,9 +7,9 @@ import { Asset } from 'aws-cdk-lib/aws-s3-assets';
 import { Construct } from 'constructs';
 
 const DEFAULT_INSTANCE_TYPE: ec2.InstanceType = ec2.InstanceType.of(ec2.InstanceClass.T3, ec2.InstanceSize.MICRO);
-const DEFAULT_MIN_SIZE: string = '1';
-const DEFAULT_MAX_SIZE: string = '1';
-const DEFAULT_DESIRED_CAPACITY: string = '1';
+const DEFAULT_MIN_SIZE: number = 1;
+const DEFAULT_MAX_SIZE: number = 1;
+// const DEFAULT_DESIRED_CAPACITY: number = 1;
 const DEFAULT_ON_DEMAND_PCT_ABOVE_BASE_CAPACITY: number = 100;
 const DEFAULT_AUTOSCALER_TAGS: { [key: string]: string } = {
   benchmark: 'transaction_group',
@@ -21,16 +21,15 @@ export interface AutoscalerProps {
   readonly asgName?: string;
   readonly vpc: ec2.IVpc;
   readonly vpcSubnets?: ec2.SubnetSelection;
-  readonly azCustomResource: CustomResource;
+  // readonly azCustomResource: CustomResource;
   readonly availabilityZones?: string[];
-  readonly subnetIds?: string[];
   readonly instanceType?: ec2.InstanceType;
   readonly machineImage?: ec2.IMachineImage;
   readonly role?: iam.IRole;
   readonly detailedMonitoring?: boolean;
   readonly minSize?: number;
   readonly maxSize?: number;
-  readonly desiredCapacity?: number;
+  // readonly desiredCapacity?: number;
   readonly onDemandPercentageAboveBaseCapacity?: number;
   readonly tags?: {
     [key: string]: string;
@@ -38,11 +37,11 @@ export interface AutoscalerProps {
 }
 
 export class Autoscaler extends Construct implements ec2.IConnectable, iam.IGrantable {
-  private readonly _asgName: string;
+  // private readonly _asgName: string;
   private readonly instanceType: ec2.InstanceType;
-  private readonly maxSize: string;
-  private readonly minSize: string;
-  private readonly desiredCapacity: string;
+  private readonly maxSize: number;
+  private readonly minSize: number;
+  // private readonly desiredCapacity: number;
   private readonly role: iam.IRole;
   private readonly onDemandPercentageAboveBaseCapacity: number;
 
@@ -56,13 +55,12 @@ export class Autoscaler extends Construct implements ec2.IConnectable, iam.IGran
   constructor(scope: Construct, id: string, props: AutoscalerProps) {
     super(scope, id);
 
-    this._asgName = props.asgName ?? `${Stack.of(this).stackName}-autoscaler-asg`;
+    // this._asgName = props.asgName ?? `${Stack.of(this).stackName}-autoscaler-asg`;
     this.instanceType = props.instanceType ?? DEFAULT_INSTANCE_TYPE;
-    this.maxSize = props.maxSize ? Tokenization.stringifyNumber(props.maxSize) : DEFAULT_MAX_SIZE;
-    this.minSize = props.minSize ? Tokenization.stringifyNumber(props.minSize) : DEFAULT_MIN_SIZE;
-    this.desiredCapacity = props.desiredCapacity ? Tokenization.stringifyNumber(props.desiredCapacity) : DEFAULT_DESIRED_CAPACITY;
+    this.maxSize = props.maxSize ?? DEFAULT_MAX_SIZE;
+    this.minSize = props.minSize ?? DEFAULT_MIN_SIZE;
+    // this.desiredCapacity = props.desiredCapacity ?? DEFAULT_DESIRED_CAPACITY;
     this.onDemandPercentageAboveBaseCapacity = props.onDemandPercentageAboveBaseCapacity ?? DEFAULT_ON_DEMAND_PCT_ABOVE_BASE_CAPACITY;
-    // const { subnetIds } = props.vpc.selectSubnets(props.vpcSubnets);
     this.tags = props.tags ?? DEFAULT_AUTOSCALER_TAGS;
 
     this.role = props.role ?? new iam.Role(this, 'Role', {
@@ -131,48 +129,28 @@ export class Autoscaler extends Construct implements ec2.IConnectable, iam.IGran
     asset.grantRead(ec2LaunchTemplate);
     asset.node.addDependency(ec2LaunchTemplate);
 
-    const { subnetIds } = props.vpc.selectSubnets({
-      availabilityZones: props.availabilityZones!,
-      subnetType: ec2.SubnetType.PRIVATE_WITH_NAT,
-    });
-
-    // hack until they support LaunchTemplates properly: https://github.com/aws/aws-cdk/issues/6734
-    const cfnLaunchTemplate = ec2LaunchTemplate.node.defaultChild as ec2.CfnLaunchTemplate;
-    const cfnAsg = new autoscaling.CfnAutoScalingGroup(this, 'Autoscaler', {
-      minSize: this.minSize,
-      maxSize: this.maxSize,
-      desiredCapacity: this.desiredCapacity,
-      autoScalingGroupName: this._asgName,
+    const asg = new autoscaling.AutoScalingGroup(this, 'Autoscaler', {
+      vpc: props.vpc,
+      vpcSubnets: {
+        availabilityZones: props.availabilityZones,
+        subnetType: ec2.SubnetType.PRIVATE_WITH_NAT,
+      },
+      minCapacity: this.minSize,
+      maxCapacity: this.maxSize,
+      // desiredCapacity: this.desiredCapacity,
       mixedInstancesPolicy: {
-        launchTemplate: {
-          launchTemplateSpecification: {
-            launchTemplateId: cfnLaunchTemplate.ref,
-            version: cfnLaunchTemplate.attrLatestVersionNumber,
-          },
-          overrides: [
-            {
-              instanceType: this.instanceType.toString(),
-            },
-          ],
-        },
+        launchTemplate: ec2LaunchTemplate,
         instancesDistribution: {
           onDemandPercentageAboveBaseCapacity: this.onDemandPercentageAboveBaseCapacity,
         },
       },
-      availabilityZones: props.availabilityZones,
-      vpcZoneIdentifier: subnetIds,
-      ...this.tags && {
-        tags: Object.keys(this.tags).map((k) => ({
-          key: k,
-          value: this.tags![k],
-          propagateAtLaunch: true,
-        })),
-      },
     });
-    cfnAsg.node.addDependency(props.azCustomResource);
-    cfnAsg.node.addDependency(asset);
 
-    this.asgName = cfnAsg.autoScalingGroupName;
+    Object.keys(this.tags).forEach(k => {
+      Tags.of(asg).add(k, this.tags![k]);
+    });
+
+    this.asgName = asg.autoScalingGroupName;
     this.connections = ec2LaunchTemplate.connections;
     this.grantPrincipal = ec2LaunchTemplate.grantPrincipal;
   }

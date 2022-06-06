@@ -25,7 +25,7 @@ export interface BenchmarkDbStackProps extends StackProps {
   readonly computeInstanceType?: ec2.InstanceType;
   readonly computeAutoscalerMinCapacity?: number;
   readonly computeAutoscalerMaxCapacity?: number;
-  readonly computeAutoscalerDesiredCapacity?: number;
+  // readonly computeAutoscalerDesiredCapacity?: number;
   readonly computeUseSpot?: boolean;
   readonly computeAutoscalerTags?: {
     [key: string]: string;
@@ -78,7 +78,7 @@ export class BenchmarkDbStack extends Stack {
       computeInstanceType: props.computeInstanceType,
       computeMinSize: props.computeAutoscalerMinCapacity,
       computeMaxSize: props.computeAutoscalerMaxCapacity,
-      computeDesiredCapacity: props.computeAutoscalerDesiredCapacity,
+      // computeDesiredCapacity: props.computeAutoscalerDesiredCapacity,
       computeUseSpot: props.computeUseSpot,
       computeTags: props.computeAutoscalerTags,
       pgBenchScaleFactor: 10000,
@@ -180,7 +180,7 @@ new BenchmarkDbStack(app, 'aurora-benchmark-stack', {
   },
   computeInstanceType: ec2.InstanceType.of(ec2.InstanceClass.C6I, ec2.InstanceSize.XLARGE8),
   computeAutoscalerMaxCapacity: 1,
-  computeAutoscalerDesiredCapacity: 1,
+  // computeAutoscalerDesiredCapacity: 1,
   computeUseSpot: true,
   computeAutoscalerTags: {
     benchmark: 'transaction_group',

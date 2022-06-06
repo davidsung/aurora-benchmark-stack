@@ -2,12 +2,14 @@ const { awscdk } = require('projen');
 const project = new awscdk.AwsCdkTypeScriptApp({
   authorEmail: 'david@davidsung.io',
   authorName: 'David Sung',
-  cdkVersion: '2.1.0',
+  cdkVersion: '2.27.0',
   defaultReleaseBranch: 'main',
-  name: 'benchmark-db-stack',
+  name: 'aurora-benchmark-stack',
   gitignore: [
     '.DS_Store',
     '.vscode',
+    'scripts/custom*.sql',
+    'stack.yaml',
   ],
 
   // deps: [],                /* Runtime dependencies of this module. */
