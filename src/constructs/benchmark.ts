@@ -209,6 +209,10 @@ export class BenchmarkService extends Construct {
       `Key=tag:${k},Values=${autoscaler.tags[k]}`
     )).join(' ');
 
+    this.ssmStartSession = `aws ssm start-session \
+--target $(aws autoscaling describe-auto-scaling-instances | \
+jq -r \'.AutoScalingInstances[] | select (.AutoScalingGroupName == "${this.asgName}") | .InstanceId\')`;
+
     this.pgbenchTxDocument = this.pbBenchDefaultTxDocument(
       targets,
       this.pgBenchConnections,
@@ -294,7 +298,7 @@ export class BenchmarkService extends Construct {
         `export BENCHMARK_TIME=${time}`,
         `export BENCHMARK_SQL_FILE=${sql}`,
         'cd /home/ec2-user/benchmark/',
-        'source /home/ec2-user/benchmark/postgres_env.sh',
+        'source /home/ec2-user/benchmark/postgres_writer_env.sh',
         'nohup /home/ec2-user/benchmark/benchmark_custom.sh 2>&1 &',
       ],
     };
