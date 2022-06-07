@@ -185,11 +185,9 @@ export class BenchmarkService extends Construct {
     });
     this.asgName = autoscaler.asgName;
 
-    if (this.auroraPostgres)
-      this.auroraPostgres.grantAccess(autoscaler);
+    if (this.auroraPostgres) {this.auroraPostgres.grantAccess(autoscaler);}
 
-    if (this.rdsPostgres)
-      this.rdsPostgres.grantAccess(autoscaler);
+    if (this.rdsPostgres) {this.rdsPostgres.grantAccess(autoscaler);}
 
     const logGroup = new logs.LogGroup(this, 'LogGroup', {
       logGroupName: props.computeLogGroupName,
@@ -198,17 +196,39 @@ export class BenchmarkService extends Construct {
     this.logGroupName = logGroup.logGroupName;
     this.logGroupArn = logGroup.logGroupArn;
 
-    if (this.asgName)
-      this.pgInitDocument = this.pgBenchInitDocument(this.pgBenchScaleFactor, this.pgBenchFillFactor, this.asgName, this.logGroupName);
+    if (this.asgName) {
+      this.pgInitDocument = this.pgBenchInitDocument(
+        this.pgBenchScaleFactor,
+        this.pgBenchFillFactor,
+        this.asgName,
+        this.logGroupName,
+      );
+    }
 
     const targets = Object.keys(autoscaler.tags).map((k) => (
       `Key=tag:${k},Values=${autoscaler.tags[k]}`
     )).join(' ');
 
-    this.pgbenchTxDocument = this.pbBenchDefaultTxDocument(targets, this.pgBenchConnections, this.pgBenchThreads, this.pgBenchProgress, this.pgBenchTime, this.logGroupName);
+    this.pgbenchTxDocument = this.pbBenchDefaultTxDocument(
+      targets,
+      this.pgBenchConnections,
+      this.pgBenchThreads,
+      this.pgBenchProgress,
+      this.pgBenchTime,
+      this.logGroupName,
+    );
 
-    if (props.pgBenchSql)
-      this.customTxDocument = this.pgBenchCustomTxDocument(targets, this.pgBenchConnections, this.pgBenchThreads, this.pgBenchProgress, this.pgBenchTime, this.logGroupName, props.pgBenchSql);
+    if (props.pgBenchSql) {
+      this.customTxDocument = this.pgBenchCustomTxDocument(
+        targets,
+        this.pgBenchConnections,
+        this.pgBenchThreads,
+        this.pgBenchProgress,
+        this.pgBenchTime,
+        this.logGroupName,
+        props.pgBenchSql,
+      );
+    }
   }
 
   private pgBenchInitDocument(scaleFactor: number, fillFactor: number, asgName: string, logGroupName: string) {
@@ -257,10 +277,12 @@ export class BenchmarkService extends Construct {
 --timeout-seconds ${time} \
 --max-concurrency "50" \
 --max-errors "0" \
---cloud-watch-output-config '{"CloudWatchLogGroupName":"${logGroupName}","CloudWatchOutputEnabled":true}'`;  
+--cloud-watch-output-config '{"CloudWatchLogGroupName":"${logGroupName}","CloudWatchOutputEnabled":true}'`;
   }
 
-  private pgBenchCustomTxDocument(targets: string, connections: number, threads: number, progress: number, time: number, logGroupName: string, sql?: string) {
+  private pgBenchCustomTxDocument(targets: string,
+    connections: number, threads: number, progress: number, time: number,
+    logGroupName: string, sql?: string) {
     const execDocumentParameters = {
       workingDirectory: [''],
       executionTimeout: ['3600'],

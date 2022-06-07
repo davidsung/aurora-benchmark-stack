@@ -107,7 +107,7 @@ Object {
         "Fn::Join": Array [
           "",
           Array [
-            "aws ssm send-command --targets Key=tag:benchmark,Values=transaction_group     --document-name \\"AWS-RunShellScript\\"     --document-version \\"1\\"     --parameters '{\\"workingDirectory\\":[\\"\\"],\\"executionTimeout\\":[\\"3600\\"],\\"commands\\":[\\"export STACK_NAME=test\\",\\"export BENCHMARK_CONNECTIONS=50\\",\\"export BENCHMARK_THREADS=24\\",\\"export BENCHMARK_PROGRESS=60\\",\\"export BENCHMARK_TIME=600\\",\\"export BENCHMARK_SQL_FILE=custom_transaction.sql\\",\\"cd /home/ec2-user/benchmark/\\",\\"source /home/ec2-user/benchmark/postgres_env.sh\\",\\"nohup /home/ec2-user/benchmark/benchmark_custom.sh 2>&1 &\\"]}'     --timeout-seconds 600     --max-concurrency \\"50\\"     --max-errors \\"0\\"     --cloud-watch-output-config '{\\"CloudWatchLogGroupName\\":\\"",
+            "aws ssm send-command --targets Key=tag:benchmark,Values=transaction_group --document-name \\"AWS-RunShellScript\\" --document-version \\"1\\" --parameters '{\\"workingDirectory\\":[\\"\\"],\\"executionTimeout\\":[\\"3600\\"],\\"commands\\":[\\"export STACK_NAME=test\\",\\"export BENCHMARK_CONNECTIONS=50\\",\\"export BENCHMARK_THREADS=24\\",\\"export BENCHMARK_PROGRESS=60\\",\\"export BENCHMARK_TIME=600\\",\\"export BENCHMARK_SQL_FILE=custom_transaction.sql\\",\\"cd /home/ec2-user/benchmark/\\",\\"source /home/ec2-user/benchmark/postgres_env.sh\\",\\"nohup /home/ec2-user/benchmark/benchmark_custom.sh 2>&1 &\\"]}' --timeout-seconds 600 --max-concurrency \\"50\\" --max-errors \\"0\\" --cloud-watch-output-config '{\\"CloudWatchLogGroupName\\":\\"",
             Object {
               "Ref": "BenchmarkServiceLogGroupD6F7E1F0",
             },
@@ -227,11 +227,11 @@ Object {
         "Fn::Join": Array [
           "",
           Array [
-            "aws ssm send-command --targets   --instance-ids $(aws autoscaling describe-auto-scaling-groups --auto-scaling-group-names ",
+            "aws ssm send-command --targets --instance-ids $(aws autoscaling describe-auto-scaling-groups --auto-scaling-group-names ",
             Object {
               "Ref": "BenchmarkServiceAutoscalerASG4E12DE6C",
             },
-            " | jq -r \\".AutoScalingGroups[].Instances | first .InstanceId\\")   --document-name \\"AWS-RunShellScript\\"   --document-version \\"1\\"   --parameters '{\\"workingDirectory\\":[\\"\\"],\\"executionTimeout\\":[\\"3600\\"],\\"commands\\":[\\"export STACK_NAME=test\\",\\"export BENCHMARK_SCALE_FACTOR=10000\\",\\"export BENCHMARK_FILL_FACTOR=90\\",\\"cd /home/ec2-user/benchmark/\\",\\"source /home/ec2-user/benchmark/postgres_writer_env.sh\\",\\"nohup /home/ec2-user/benchmark/benchmark_init.sh 2>&1 &\\"]}'   --timeout-seconds 600   --cloud-watch-output-config '{\\"CloudWatchLogGroupName\\":\\"",
+            " | jq -r \\".AutoScalingGroups[].Instances | first .InstanceId\\") --document-name \\"AWS-RunShellScript\\" --document-version \\"1\\" --parameters '{\\"workingDirectory\\":[\\"\\"],\\"executionTimeout\\":[\\"3600\\"],\\"commands\\":[\\"export STACK_NAME=test\\",\\"export BENCHMARK_SCALE_FACTOR=10000\\",\\"export BENCHMARK_FILL_FACTOR=90\\",\\"cd /home/ec2-user/benchmark/\\",\\"source /home/ec2-user/benchmark/postgres_writer_env.sh\\",\\"nohup /home/ec2-user/benchmark/benchmark_init.sh 2>&1 &\\"]}' --timeout-seconds 600 --cloud-watch-output-config '{\\"CloudWatchLogGroupName\\":\\"",
             Object {
               "Ref": "BenchmarkServiceLogGroupD6F7E1F0",
             },
@@ -245,7 +245,7 @@ Object {
         "Fn::Join": Array [
           "",
           Array [
-            "aws ssm send-command --targets Key=tag:benchmark,Values=transaction_group   --document-name \\"AWS-RunShellScript\\"   --document-version \\"1\\"   --parameters '{\\"workingDirectory\\":[\\"\\"],\\"executionTimeout\\":[\\"3600\\"],\\"commands\\":[\\"export STACK_NAME=test\\",\\"export BENCHMARK_CONNECTIONS=50\\",\\"export BENCHMARK_THREADS=24\\",\\"export BENCHMARK_PROGRESS=60\\",\\"export BENCHMARK_TIME=600\\",\\"cd /home/ec2-user/benchmark/\\",\\"source /home/ec2-user/benchmark/postgres_writer_env.sh\\",\\"nohup /home/ec2-user/benchmark/benchmark_default.sh 2>&1 &\\"]}'   --timeout-seconds 600   --max-concurrency \\"50\\"   --max-errors \\"0\\"   --cloud-watch-output-config '{\\"CloudWatchLogGroupName\\":\\"",
+            "aws ssm send-command --targets Key=tag:benchmark,Values=transaction_group --document-name \\"AWS-RunShellScript\\" --document-version \\"1\\" --parameters '{\\"workingDirectory\\":[\\"\\"],\\"executionTimeout\\":[\\"3600\\"],\\"commands\\":[\\"export STACK_NAME=test\\",\\"export BENCHMARK_CONNECTIONS=50\\",\\"export BENCHMARK_THREADS=24\\",\\"export BENCHMARK_PROGRESS=60\\",\\"export BENCHMARK_TIME=600\\",\\"cd /home/ec2-user/benchmark/\\",\\"source /home/ec2-user/benchmark/postgres_writer_env.sh\\",\\"nohup /home/ec2-user/benchmark/benchmark_default.sh 2>&1 &\\"]}' --timeout-seconds 600 --max-concurrency \\"50\\" --max-errors \\"0\\" --cloud-watch-output-config '{\\"CloudWatchLogGroupName\\":\\"",
             Object {
               "Ref": "BenchmarkServiceLogGroupD6F7E1F0",
             },
@@ -615,7 +615,7 @@ sudo chmod +x /home/ec2-user/benchmark/*.sh",
           "S3Bucket": Object {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "5324c6929ed2eb9bb04e859b02b6c336a8d71c64ca1f9e02ad9d7d9be5bea7ea.zip",
+          "S3Key": "8a08f06ec49351d5a817b10352a76adf440cf76d28e24014e748edf2e0569a69.zip",
         },
         "Handler": "db_az_awareness_event_handler.is_complete",
         "Role": Object {
@@ -695,7 +695,7 @@ sudo chmod +x /home/ec2-user/benchmark/*.sh",
           "S3Bucket": Object {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "5324c6929ed2eb9bb04e859b02b6c336a8d71c64ca1f9e02ad9d7d9be5bea7ea.zip",
+          "S3Key": "8a08f06ec49351d5a817b10352a76adf440cf76d28e24014e748edf2e0569a69.zip",
         },
         "Handler": "db_az_awareness_event_handler.on_event",
         "Role": Object {

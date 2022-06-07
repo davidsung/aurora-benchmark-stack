@@ -4,7 +4,6 @@ import * as rds from 'aws-cdk-lib/aws-rds';
 import { Construct } from 'constructs';
 import { BenchmarkService } from './constructs/benchmark';
 
-// const DEFAULT_VPC_NAME = 'benchmark-db-vpc';
 const DEFAULT_VPC_CIDR = '10.0.0.0/16';
 
 export interface BenchmarkDbStackProps extends StackProps {
@@ -136,9 +135,9 @@ export class BenchmarkDbStack extends Stack {
         value: benchmarkService.pgbenchTxDocument,
       });
     }
-    if (benchmarkService.pgBenchCustomTxDocument) {
+    if (benchmarkService.customTxDocument) {
       new CfnOutput(this, 'CustomTx', {
-        value: benchmarkService.pgBenchCustomTxDocument,
+        value: benchmarkService.customTxDocument,
       });
     }
     if (benchmarkService.ssmStartSession) {

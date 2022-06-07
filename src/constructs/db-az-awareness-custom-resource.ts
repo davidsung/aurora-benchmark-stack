@@ -67,7 +67,7 @@ export class DBAvailabilityZoneAwarenessCustomResource extends Construct {
     });
   }
 
-  public getWriterAvailabilityZone() {
+  public getAvailabilityZone() {
     return this.customResource.getAttString('AvailabilityZone');
   }
 
