@@ -89,7 +89,12 @@ def is_complete(event, context):
                                 },
                                 'IsComplete': True
                             }
-        except rds.exceptions.DBClusterNotFoundFault:
+        except botocore.exceptions.ClientError as err:
+            print(f"botocore.exceptions.ClientError {err}")
+            is_ready = False
+
+        except rds.exceptions.DBClusterNotFoundFault as err:
+            print(f"rds.exceptions.DBClusterNotFoundFault {err}")
             is_ready = False
 
     if request_type == 'update':

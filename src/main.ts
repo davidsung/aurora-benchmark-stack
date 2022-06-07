@@ -1,10 +1,10 @@
-import { App, Stack, StackProps, CfnOutput, Token, Tags } from 'aws-cdk-lib';
+import { App, Stack, StackProps, CfnOutput, Token } from 'aws-cdk-lib';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as rds from 'aws-cdk-lib/aws-rds';
 import { Construct } from 'constructs';
 import { BenchmarkService } from './constructs/benchmark';
 
-const DEFAULT_VPC_NAME = 'benchmark-db-vpc';
+// const DEFAULT_VPC_NAME = 'benchmark-db-vpc';
 const DEFAULT_VPC_CIDR = '10.0.0.0/16';
 
 export interface BenchmarkDbStackProps extends StackProps {
@@ -40,7 +40,7 @@ export class BenchmarkDbStack extends Stack {
     super(scope, id, props);
 
     this.vpcCidr = props.vpcCidr ?? DEFAULT_VPC_CIDR;
-    this.vpcName = props.vpcName ?? DEFAULT_VPC_NAME;
+    this.vpcName = props.vpcName ?? `${Stack.of(this).stackName}-vpc`;
 
     const vpc = new ec2.Vpc(this, 'Vpc', {
       vpcName: this.vpcName,
@@ -65,10 +65,6 @@ export class BenchmarkDbStack extends Stack {
       ],
     });
 
-    vpc.privateSubnets.forEach(subnet => {
-      Tags.of(subnet).add('subnet-type', 'private');
-    });
-
     const benchmarkService = new BenchmarkService(this, 'BenchmarkService', {
       vpc,
       dbVpcSubnets: { subnetType: ec2.SubnetType.PRIVATE_ISOLATED },
@@ -78,7 +74,6 @@ export class BenchmarkDbStack extends Stack {
       dbStorageType: props.dbStorageType,
       dbIops: props.dbIops,
       dbParameters: props.dbParameters,
-      computeVpcSubnets: { subnetType: ec2.SubnetType.PRIVATE_WITH_NAT },
       computeInstanceType: props.computeInstanceType,
       computeMinSize: props.computeAutoscalerMinCapacity,
       computeMaxSize: props.computeAutoscalerMaxCapacity,
@@ -141,9 +136,9 @@ export class BenchmarkDbStack extends Stack {
         value: benchmarkService.pgbenchTxDocument,
       });
     }
-    if (benchmarkService.customTxDocument) {
+    if (benchmarkService.pgBenchCustomTxDocument) {
       new CfnOutput(this, 'CustomTx', {
-        value: benchmarkService.customTxDocument,
+        value: benchmarkService.pgBenchCustomTxDocument,
       });
     }
     if (benchmarkService.ssmStartSession) {

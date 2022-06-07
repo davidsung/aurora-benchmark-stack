@@ -615,7 +615,7 @@ sudo chmod +x /home/ec2-user/benchmark/*.sh",
           "S3Bucket": Object {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "3a32498383d786b3a6c9bcc79f170d565f472d8d67d7058109e66b121df68b7f.zip",
+          "S3Key": "5324c6929ed2eb9bb04e859b02b6c336a8d71c64ca1f9e02ad9d7d9be5bea7ea.zip",
         },
         "Handler": "db_az_awareness_event_handler.is_complete",
         "Role": Object {
@@ -695,7 +695,7 @@ sudo chmod +x /home/ec2-user/benchmark/*.sh",
           "S3Bucket": Object {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "3a32498383d786b3a6c9bcc79f170d565f472d8d67d7058109e66b121df68b7f.zip",
+          "S3Key": "5324c6929ed2eb9bb04e859b02b6c336a8d71c64ca1f9e02ad9d7d9be5bea7ea.zip",
         },
         "Handler": "db_az_awareness_event_handler.on_event",
         "Role": Object {
@@ -1148,7 +1148,7 @@ sudo chmod +x /home/ec2-user/benchmark/*.sh",
           "Fn::Join": Array [
             "",
             Array [
-              "{\\"StartAt\\":\\"framework-isComplete-task\\",\\"States\\":{\\"framework-isComplete-task\\":{\\"End\\":true,\\"Retry\\":[{\\"ErrorEquals\\":[\\"States.ALL\\"],\\"IntervalSeconds\\":5,\\"MaxAttempts\\":360,\\"BackoffRate\\":1}],\\"Catch\\":[{\\"ErrorEquals\\":[\\"States.ALL\\"],\\"Next\\":\\"framework-onTimeout-task\\"}],\\"Type\\":\\"Task\\",\\"Resource\\":\\"",
+              "{\\"StartAt\\":\\"framework-isComplete-task\\",\\"States\\":{\\"framework-isComplete-task\\":{\\"End\\":true,\\"Retry\\":[{\\"ErrorEquals\\":[\\"States.ALL\\"],\\"IntervalSeconds\\":30,\\"MaxAttempts\\":60,\\"BackoffRate\\":1}],\\"Catch\\":[{\\"ErrorEquals\\":[\\"States.ALL\\"],\\"Next\\":\\"framework-onTimeout-task\\"}],\\"Type\\":\\"Task\\",\\"Resource\\":\\"",
               Object {
                 "Fn::GetAtt": Array [
                   "BenchmarkServiceAutoscalerDBAvailabilityZoneAwarenessCustomResourceProviderframeworkisComplete76F74455",
@@ -1496,7 +1496,7 @@ sudo chmod +x /home/ec2-user/benchmark/*.sh",
         "Tags": Array [
           Object {
             "Key": "Name",
-            "Value": "benchmark-db-vpc",
+            "Value": "test-vpc",
           },
         ],
       },
@@ -1507,7 +1507,7 @@ sudo chmod +x /home/ec2-user/benchmark/*.sh",
         "Tags": Array [
           Object {
             "Key": "Name",
-            "Value": "benchmark-db-vpc",
+            "Value": "test-vpc",
           },
         ],
       },

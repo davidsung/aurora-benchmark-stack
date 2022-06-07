@@ -38,7 +38,7 @@ export interface RdsPostgresInstanceProps {
 export class RdsPostgresInstance extends Construct implements ec2.IConnectable {
   public readonly dbWriterEndpointAddress: string;
   public readonly dbWriterPort: number;
-  public readonly dbWriterId: string;
+  public readonly dbWriterInstanceIdentifier: string;
   public readonly dbReaderInstanceEndpointAddress?: string;
   public readonly dbReaderPort?: number;
   public readonly secret?: secretsmanager.ISecret;
@@ -94,7 +94,7 @@ export class RdsPostgresInstance extends Construct implements ec2.IConnectable {
     this.dbWriterPort = Number(this._rdsPostgres.dbInstanceEndpointPort);
     this.secret = this._rdsPostgres.secret;
     this.connections = this._rdsPostgres.connections;
-    this.dbWriterId = this._rdsPostgres.instanceIdentifier;
+    this.dbWriterInstanceIdentifier = this._rdsPostgres.instanceIdentifier;
 
     // Allow postgresql port from benchmark instance
     if (props.autoscaler) {

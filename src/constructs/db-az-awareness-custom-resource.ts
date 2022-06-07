@@ -1,5 +1,5 @@
 import * as path from 'path';
-import { CustomResource } from 'aws-cdk-lib';
+import { CustomResource, Duration } from 'aws-cdk-lib';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
@@ -54,6 +54,7 @@ export class DBAvailabilityZoneAwarenessCustomResource extends Construct {
     const crProvider = new cr.Provider(this, 'Provider', {
       onEventHandler,
       isCompleteHandler,
+      queryInterval: Duration.seconds(30),
     });
 
     this.customResource = new CustomResource(this, 'DBAvailabilityZoneAwarenessCustomResource', {

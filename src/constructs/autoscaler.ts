@@ -57,6 +57,11 @@ export class Autoscaler extends Construct implements ec2.IConnectable, iam.IGran
   constructor(scope: Construct, id: string, props: AutoscalerProps) {
     super(scope, id);
 
+    // Add tags to subnets for custom resource lambda to identify the desired subnets
+    props.vpc.privateSubnets.forEach(subnet => {
+      Tags.of(subnet).add('subnet-type', 'private');
+    });
+
     const azAwarenessCustomResource = new DBAvailabilityZoneAwarenessCustomResource(this, 'DBAvailabilityZoneAwarenessCustomResource', {
       vpc: props.vpc,
       dbEngineVersion: props.dbEngineVersion,
