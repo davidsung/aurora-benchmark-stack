@@ -107,7 +107,7 @@ Object {
         "Fn::Join": Array [
           "",
           Array [
-            "aws ssm send-command --targets Key=tag:benchmark,Values=transaction_group --document-name \\"AWS-RunShellScript\\" --document-version \\"1\\" --parameters '{\\"workingDirectory\\":[\\"\\"],\\"executionTimeout\\":[\\"3600\\"],\\"commands\\":[\\"export STACK_NAME=test\\",\\"export BENCHMARK_CONNECTIONS=50\\",\\"export BENCHMARK_THREADS=24\\",\\"export BENCHMARK_PROGRESS=60\\",\\"export BENCHMARK_TIME=600\\",\\"export BENCHMARK_SQL_FILE=custom_transaction.sql\\",\\"cd /home/ec2-user/benchmark/\\",\\"source /home/ec2-user/benchmark/postgres_env.sh\\",\\"nohup /home/ec2-user/benchmark/benchmark_custom.sh 2>&1 &\\"]}' --timeout-seconds 600 --max-concurrency \\"50\\" --max-errors \\"0\\" --cloud-watch-output-config '{\\"CloudWatchLogGroupName\\":\\"",
+            "aws ssm send-command --targets Key=tag:benchmark,Values=transaction_group --document-name \\"AWS-RunShellScript\\" --document-version \\"1\\" --parameters '{\\"workingDirectory\\":[\\"\\"],\\"executionTimeout\\":[\\"3600\\"],\\"commands\\":[\\"export STACK_NAME=test\\",\\"export BENCHMARK_CONNECTIONS=50\\",\\"export BENCHMARK_THREADS=24\\",\\"export BENCHMARK_PROGRESS=60\\",\\"export BENCHMARK_TIME=600\\",\\"export BENCHMARK_SQL_FILE=custom_transaction.sql\\",\\"cd /home/ec2-user/benchmark/\\",\\"source /home/ec2-user/benchmark/postgres_writer_env.sh\\",\\"nohup /home/ec2-user/benchmark/benchmark_custom.sh 2>&1 &\\"]}' --timeout-seconds 600 --max-concurrency \\"50\\" --max-errors \\"0\\" --cloud-watch-output-config '{\\"CloudWatchLogGroupName\\":\\"",
             Object {
               "Ref": "BenchmarkServiceLogGroupD6F7E1F0",
             },
@@ -250,6 +250,20 @@ Object {
               "Ref": "BenchmarkServiceLogGroupD6F7E1F0",
             },
             "\\",\\"CloudWatchOutputEnabled\\":true}'",
+          ],
+        ],
+      },
+    },
+    "SsmStartSession": Object {
+      "Value": Object {
+        "Fn::Join": Array [
+          "",
+          Array [
+            "aws ssm start-session --target $(aws autoscaling describe-auto-scaling-instances | jq -r '.AutoScalingInstances[] | select (.AutoScalingGroupName == \\"",
+            Object {
+              "Ref": "BenchmarkServiceAutoscalerASG4E12DE6C",
+            },
+            "\\") | .InstanceId')",
           ],
         ],
       },
@@ -535,12 +549,12 @@ sudo amazon-linux-extras install postgresql12
 sudo yum install -y jq postgresql-contrib
 mkdir /home/ec2-user/benchmark
 cd /home/ec2-user/benchmark
-mkdir -p $(dirname '/home/ec2-user/benchmark/7f106e490d89c6a00f3bec3d113fe46746d85c6c58760347946e8814997b9f65.zip')
+mkdir -p $(dirname '/home/ec2-user/benchmark/26a6212bfdd6c90f5b91676060f19788593bbc1033554e8251495adb99e6738a.zip')
 aws s3 cp 's3://",
                   Object {
                     "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
                   },
-                  "/7f106e490d89c6a00f3bec3d113fe46746d85c6c58760347946e8814997b9f65.zip' '/home/ec2-user/benchmark/7f106e490d89c6a00f3bec3d113fe46746d85c6c58760347946e8814997b9f65.zip'
+                  "/26a6212bfdd6c90f5b91676060f19788593bbc1033554e8251495adb99e6738a.zip' '/home/ec2-user/benchmark/26a6212bfdd6c90f5b91676060f19788593bbc1033554e8251495adb99e6738a.zip'
 aws configure set region ",
                   Object {
                     "Ref": "AWS::Region",
@@ -548,7 +562,7 @@ aws configure set region ",
                   "
 cp -r /root/.aws /home/ec2-user/
 sudo chown -R ec2-user: /home/ec2-user/.aws
-unzip 7f106e490d89c6a00f3bec3d113fe46746d85c6c58760347946e8814997b9f65.zip
+unzip 26a6212bfdd6c90f5b91676060f19788593bbc1033554e8251495adb99e6738a.zip
 cp -f /home/ec2-user/benchmark/ulimits.conf /etc/security/limits.conf
 sudo chown -R ec2-user: /home/ec2-user/benchmark
 sudo chmod +x /home/ec2-user/benchmark/*.sh",
@@ -615,7 +629,7 @@ sudo chmod +x /home/ec2-user/benchmark/*.sh",
           "S3Bucket": Object {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "8a08f06ec49351d5a817b10352a76adf440cf76d28e24014e748edf2e0569a69.zip",
+          "S3Key": "4cb52106aa446af08ff9dc46283ba4af249bd2674af6b07ade68b6e18092b3ea.zip",
         },
         "Handler": "db_az_awareness_event_handler.is_complete",
         "Role": Object {
@@ -695,7 +709,7 @@ sudo chmod +x /home/ec2-user/benchmark/*.sh",
           "S3Bucket": Object {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "8a08f06ec49351d5a817b10352a76adf440cf76d28e24014e748edf2e0569a69.zip",
+          "S3Key": "4cb52106aa446af08ff9dc46283ba4af249bd2674af6b07ade68b6e18092b3ea.zip",
         },
         "Handler": "db_az_awareness_event_handler.on_event",
         "Role": Object {
