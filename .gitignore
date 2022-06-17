@@ -32,7 +32,7 @@ jspm_packages/
 .cache
 .DS_Store
 .vscode
-scripts/custom*.sql
+scripts/custom_schema
 stack.yaml
 !/.projenrc.js
 /test-reports/

@@ -64,7 +64,6 @@ export class Autoscaler extends Construct implements ec2.IConnectable, iam.IGran
 
     const azAwarenessCustomResource = new DBAvailabilityZoneAwarenessCustomResource(this, 'DBAvailabilityZoneAwarenessCustomResource', {
       vpc: props.vpc,
-      dbEngineVersion: props.dbEngineVersion,
       clusterIdentifier: props.clusterIdentifier,
       instanceIdentifier: props.instanceIdentifier,
     });

@@ -57,6 +57,7 @@ export interface BenchmarkServiceProps {
   readonly pgBenchThreads?: number;
   readonly pgBenchProgress?: number;
   readonly pgBenchTime?: number;
+  readonly pgVacuumTables?: string[];
   readonly pgBenchSql?: string;
 }
 
@@ -81,8 +82,10 @@ export class BenchmarkService extends Construct {
 
   public readonly pgInitDocument?: string;
   public readonly pgbenchTxDocument?: string;
+  public readonly customInitDocument?: string;
   public readonly customTxDocument?: string;
   public readonly ssmStartSession?: string;
+  public readonly terminateInstances?: string;
 
   private readonly pgBenchScaleFactor: number;
   private readonly pgBenchFillFactor: number;
@@ -213,6 +216,11 @@ export class BenchmarkService extends Construct {
 --target $(aws autoscaling describe-auto-scaling-instances | \
 jq -r \'.AutoScalingInstances[] | select (.AutoScalingGroupName == "${this.asgName}") | .InstanceId\')`;
 
+    this.terminateInstances = `aws autoscaling terminate-instance-in-auto-scaling-group \
+--no-should-decrement-desired-capacity \
+--instance-id $(aws autoscaling describe-auto-scaling-groups \
+--filters Name=tag:stack,Values=${Stack.of(this).stackName} | jq -r ".AutoScalingGroups[].Instances[].InstanceId")`;
+
     this.pgbenchTxDocument = this.pbBenchDefaultTxDocument(
       targets,
       this.pgBenchConnections,
@@ -223,6 +231,13 @@ jq -r \'.AutoScalingInstances[] | select (.AutoScalingGroupName == "${this.asgNa
     );
 
     if (props.pgBenchSql) {
+      if (this.asgName) {
+        this.customInitDocument = this.pgBenchCustomInitDocument(
+          this.asgName,
+          this.logGroupName,
+        );
+      }
+
       this.customTxDocument = this.pgBenchCustomTxDocument(
         targets,
         this.pgBenchConnections,
@@ -230,6 +245,7 @@ jq -r \'.AutoScalingInstances[] | select (.AutoScalingGroupName == "${this.asgNa
         this.pgBenchProgress,
         this.pgBenchTime,
         this.logGroupName,
+        props.pgVacuumTables,
         props.pgBenchSql,
       );
     }
@@ -284,9 +300,30 @@ jq -r \'.AutoScalingInstances[] | select (.AutoScalingGroupName == "${this.asgNa
 --cloud-watch-output-config '{"CloudWatchLogGroupName":"${logGroupName}","CloudWatchOutputEnabled":true}'`;
   }
 
+  private pgBenchCustomInitDocument(asgName: string, logGroupName: string) {
+    const initDocumentParameters = {
+      workingDirectory: [''],
+      executionTimeout: ['3600'],
+      commands: [
+        `export STACK_NAME=${Stack.of(this).stackName}`,
+        'cd /home/ec2-user/benchmark/',
+        'source /home/ec2-user/benchmark/postgres_writer_env.sh',
+        'psql < custom_schema/custom_init.sql 2>&1',
+      ],
+    };
+
+    return `aws ssm send-command --targets \
+--instance-ids $(aws autoscaling describe-auto-scaling-groups --auto-scaling-group-names ${asgName} | jq -r ".AutoScalingGroups[].Instances | first .InstanceId") \
+--document-name "AWS-RunShellScript" \
+--document-version "1" \
+--parameters '${JSON.stringify(initDocumentParameters)}' \
+--timeout-seconds 600 \
+--cloud-watch-output-config '{"CloudWatchLogGroupName":"${logGroupName}","CloudWatchOutputEnabled":true}'`;
+  }
+
   private pgBenchCustomTxDocument(targets: string,
     connections: number, threads: number, progress: number, time: number,
-    logGroupName: string, sql?: string) {
+    logGroupName: string, vacuumTables?: string[], sql?: string) {
     const execDocumentParameters = {
       workingDirectory: [''],
       executionTimeout: ['3600'],
@@ -299,7 +336,10 @@ jq -r \'.AutoScalingInstances[] | select (.AutoScalingGroupName == "${this.asgNa
         `export BENCHMARK_SQL_FILE=${sql}`,
         'cd /home/ec2-user/benchmark/',
         'source /home/ec2-user/benchmark/postgres_writer_env.sh',
-        'nohup /home/ec2-user/benchmark/benchmark_custom.sh 2>&1 &',
+        `/home/ec2-user/benchmark/vacuum_analyze.sh ${vacuumTables?.join()} 2>&1`,
+        `/home/ec2-user/benchmark/image_capture.sh 2>&1`,
+        '/home/ec2-user/benchmark/benchmark_custom.sh 2>&1',
+        `/home/ec2-user/benchmark/image_capture.sh 2>&1`,
       ],
     };
 

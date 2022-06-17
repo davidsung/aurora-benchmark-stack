@@ -12,6 +12,7 @@ export interface BenchmarkDbStackProps extends StackProps {
 
   readonly dbEngineVersion?: rds.AuroraPostgresEngineVersion | rds.PostgresEngineVersion;
   readonly dbInstanceType?: ec2.InstanceType;
+  readonly dbCreateReplica?: boolean;
   readonly dbMultiAz?: boolean;
   readonly dbAllocatedStorage?: number;
   readonly dbStorageType?: rds.StorageType;
@@ -29,6 +30,14 @@ export interface BenchmarkDbStackProps extends StackProps {
   readonly computeAutoscalerTags?: {
     [key: string]: string;
   };
+
+  readonly pgBenchScaleFactor?: number;
+  readonly pgBenchFillFactor?: number;
+  readonly pgBenchConnections?: number;
+  readonly pgBenchThreads?: number;
+  readonly pgBenchTime?: number;
+  readonly pgVacuumTables?: string[];
+  readonly pgBenchSql?: string;
 }
 
 export class BenchmarkDbStack extends Stack {
@@ -69,6 +78,7 @@ export class BenchmarkDbStack extends Stack {
       dbVpcSubnets: { subnetType: ec2.SubnetType.PRIVATE_ISOLATED },
       dbEngineVersion: props.dbEngineVersion ?? rds.AuroraPostgresEngineVersion.VER_12_8,
       dbInstanceType: props.dbInstanceType,
+      dbCreateReplica: props.dbCreateReplica,
       dbMultiAz: props.dbMultiAz,
       dbAllocatedStorage: props.dbAllocatedStorage,
       dbStorageType: props.dbStorageType,
@@ -80,12 +90,13 @@ export class BenchmarkDbStack extends Stack {
       computeDesiredCapacity: props.computeAutoscalerDesiredCapacity,
       computeUseSpot: props.computeUseSpot,
       computeTags: props.computeAutoscalerTags,
-      pgBenchScaleFactor: 10000,
-      pgBenchFillFactor: 90,
-      pgBenchConnections: 150,
-      pgBenchThreads: 24,
-      pgBenchTime: 600,
-      pgBenchSql: 'custom_transaction.sql',
+      pgBenchScaleFactor: props.pgBenchScaleFactor,
+      pgBenchFillFactor: props.pgBenchFillFactor,
+      pgBenchConnections: props.pgBenchConnections,
+      pgBenchThreads: props.pgBenchThreads,
+      pgBenchTime: props.pgBenchTime,
+      pgVacuumTables: props.pgVacuumTables,
+      pgBenchSql: props.pgBenchSql,
     });
 
     new CfnOutput(this, 'LogGroupArn', {
@@ -136,6 +147,11 @@ export class BenchmarkDbStack extends Stack {
         value: benchmarkService.pgbenchTxDocument,
       });
     }
+    if (benchmarkService.customInitDocument) {
+      new CfnOutput(this, 'CustomInit', {
+        value: benchmarkService.customInitDocument,
+      });
+    }
     if (benchmarkService.customTxDocument) {
       new CfnOutput(this, 'CustomTx', {
         value: benchmarkService.customTxDocument,
@@ -144,6 +160,11 @@ export class BenchmarkDbStack extends Stack {
     if (benchmarkService.ssmStartSession) {
       new CfnOutput(this, 'SsmStartSession', {
         value: benchmarkService.ssmStartSession,
+      });
+    }
+    if (benchmarkService.terminateInstances) {
+      new CfnOutput(this, 'TerminateInstances', {
+        value: benchmarkService.terminateInstances,
       });
     }
   }
@@ -156,29 +177,33 @@ const env = {
 
 const app = new App();
 
-new BenchmarkDbStack(app, 'aurora-benchmark-stack', {
+const stackName = 'aurora-benchmark-stack';
+new BenchmarkDbStack(app, stackName, {
   env,
   dbEngineVersion: rds.AuroraPostgresEngineVersion.VER_13_3,
-  dbInstanceType: ec2.InstanceType.of(ec2.InstanceClass.R6G, ec2.InstanceSize.XLARGE8),
-  // dbStorageType: rds.StorageType.IO1,
-  // dbIops: 40000,
+  dbInstanceType: ec2.InstanceType.of(ec2.InstanceClass.R6G, ec2.InstanceSize.XLARGE16),
+  dbCreateReplica: false,
   dbParameters: {
-    'log_min_duration_statement': '30000',
-    'max_logical_replication_workers': '32',
-    'max_parallel_maintenance_workers': '2',
-    'max_replication_slots': '100',
-    'max_standby_streaming_delay': '30000',
-    'max_worker_processes': '32',
     'rds.logical_replication': '1',
-    'wal_sender_timeout': '0',
+    'shared_preload_libraries': 'pg_stat_statements',
   },
   computeInstanceType: ec2.InstanceType.of(ec2.InstanceClass.C5, ec2.InstanceSize.XLARGE9),
   computeAutoscalerMaxCapacity: 1,
-  // computeAutoscalerDesiredCapacity: 1,
   computeUseSpot: true,
   computeAutoscalerTags: {
+    stack: stackName,
     benchmark: 'transaction_group',
   },
+  pgBenchScaleFactor: 10000,
+  pgBenchFillFactor: 90,
+  pgBenchConnections: 150,
+  pgBenchThreads: 24,
+  pgBenchTime: 900,
+  pgVacuumTables: [
+    'instruction',
+    'journal',
+  ],
+  pgBenchSql: 'custom_schema/custom_insert.sql',
 });
 
 app.synth();

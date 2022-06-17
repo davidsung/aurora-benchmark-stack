@@ -3,13 +3,11 @@ import { CustomResource, Duration } from 'aws-cdk-lib';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
-import * as rds from 'aws-cdk-lib/aws-rds';
 import * as cr from 'aws-cdk-lib/custom-resources';
 import { Construct } from 'constructs';
 
 export interface DBAvailabilityZoneAwarenessCustomResourceProps {
   readonly vpc: ec2.IVpc;
-  readonly dbEngineVersion: rds.AuroraPostgresEngineVersion | rds.PostgresEngineVersion;
   readonly clusterIdentifier?: string;
   readonly instanceIdentifier?: string;
 }

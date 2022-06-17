@@ -8,7 +8,7 @@ const project = new awscdk.AwsCdkTypeScriptApp({
   gitignore: [
     '.DS_Store',
     '.vscode',
-    'scripts/custom*.sql',
+    'scripts/custom_schema',
     'stack.yaml',
   ],
 
