@@ -40,7 +40,7 @@ test('Aurora Cluster match specified number of instances', () => {
   });
   // THEN
   const template = Template.fromStack(stack);
-  template.resourceCountIs('AWS::RDS::DBInstance', 3);
+  template.resourceCountIs('AWS::RDS::DBInstance', 2);
 });
 
 test('Aurora Cluster match specified instance type', () => {

@@ -130,10 +130,7 @@ export class Autoscaler extends Construct implements ec2.IConnectable, iam.IGran
 
     const ec2LaunchTemplate = new ec2.LaunchTemplate(this, 'AutoscalerLaunchTemplate', {
       instanceType: this.instanceType,
-      machineImage: props.machineImage ?? ec2.MachineImage.latestAmazonLinux({
-        generation: ec2.AmazonLinuxGeneration.AMAZON_LINUX_2,
-        edition: ec2.AmazonLinuxEdition.STANDARD,
-      }),
+      machineImage: props.machineImage ?? ec2.MachineImage.latestAmazonLinux2(),
       role: this.role,
       detailedMonitoring: props.detailedMonitoring,
       securityGroup,

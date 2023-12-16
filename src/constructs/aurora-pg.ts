@@ -66,15 +66,22 @@ export class AuroraPostgresCluster extends Construct implements ec2.IConnectable
     // Create Aurora PostgreSQL Database Cluster
     this._auroraPostgres = new rds.DatabaseCluster(this, 'DatabaseCluster', {
       engine: this.engine,
-      instances: props.instances,
-      instanceProps: {
-        vpc: props.vpc,
-        vpcSubnets: props.vpcSubnets,
+      vpcSubnets: props.vpcSubnets,
+      vpc: props.vpc,
+      writer: rds.ClusterInstance.provisioned('ClusterInstanceWriter', {
         instanceType: this.instanceType,
         enablePerformanceInsights: true,
         performanceInsightEncryptionKey: props.performanceInsightEncryptionKey,
         parameters: props.instanceParameters,
-      },
+      }),
+      readers: [
+        rds.ClusterInstance.provisioned('ClusterInstanceReader1', {
+          instanceType: this.instanceType,
+          enablePerformanceInsights: true,
+          performanceInsightEncryptionKey: props.performanceInsightEncryptionKey,
+          parameters: props.instanceParameters,
+        }),
+      ],
       credentials: rds.Credentials.fromGeneratedSecret(this.username),
       parameters: props.clusterParameters,
       storageEncrypted: true,

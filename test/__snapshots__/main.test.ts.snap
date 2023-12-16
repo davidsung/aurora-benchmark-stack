@@ -279,12 +279,64 @@ Object {
       "Description": "Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]",
       "Type": "AWS::SSM::Parameter::Value<String>",
     },
-    "SsmParameterValueawsserviceamiamazonlinuxlatestamzn2amihvmx8664gp2C96584B6F00A464EAD1953AFF4B05118Parameter": Object {
-      "Default": "/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2",
+    "SsmParameterValueawsserviceamiamazonlinuxlatestamzn2amikernel510hvmx8664gp2C96584B6F00A464EAD1953AFF4B05118Parameter": Object {
+      "Default": "/aws/service/ami-amazon-linux-latest/amzn2-ami-kernel-5.10-hvm-x86_64-gp2",
       "Type": "AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>",
     },
   },
   "Resources": Object {
+    "BenchmarkServiceAuroraPostgresDatabaseClusterClusterInstanceReader1B4BF1D0E": Object {
+      "DeletionPolicy": "Delete",
+      "DependsOn": Array [
+        "VpcdatabaseSubnet1RouteTableAssociationEE6CA36B",
+        "VpcdatabaseSubnet2RouteTableAssociationCADBAF9A",
+      ],
+      "Properties": Object {
+        "DBClusterIdentifier": Object {
+          "Ref": "BenchmarkServiceAuroraPostgresDatabaseClusterDD5B86C0",
+        },
+        "DBInstanceClass": "db.t4g.medium",
+        "EnablePerformanceInsights": true,
+        "Engine": "aurora-postgresql",
+        "PerformanceInsightsKMSKeyId": Object {
+          "Fn::GetAtt": Array [
+            "BenchmarkServiceDBPerformanceInsightEncryptionKey892D2812",
+            "Arn",
+          ],
+        },
+        "PerformanceInsightsRetentionPeriod": 7,
+        "PromotionTier": 2,
+        "PubliclyAccessible": false,
+      },
+      "Type": "AWS::RDS::DBInstance",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "BenchmarkServiceAuroraPostgresDatabaseClusterClusterInstanceWriter135A97FD": Object {
+      "DeletionPolicy": "Delete",
+      "DependsOn": Array [
+        "VpcdatabaseSubnet1RouteTableAssociationEE6CA36B",
+        "VpcdatabaseSubnet2RouteTableAssociationCADBAF9A",
+      ],
+      "Properties": Object {
+        "DBClusterIdentifier": Object {
+          "Ref": "BenchmarkServiceAuroraPostgresDatabaseClusterDD5B86C0",
+        },
+        "DBInstanceClass": "db.t4g.medium",
+        "EnablePerformanceInsights": true,
+        "Engine": "aurora-postgresql",
+        "PerformanceInsightsKMSKeyId": Object {
+          "Fn::GetAtt": Array [
+            "BenchmarkServiceDBPerformanceInsightEncryptionKey892D2812",
+            "Arn",
+          ],
+        },
+        "PerformanceInsightsRetentionPeriod": 7,
+        "PromotionTier": 0,
+        "PubliclyAccessible": false,
+      },
+      "Type": "AWS::RDS::DBInstance",
+      "UpdateReplacePolicy": "Delete",
+    },
     "BenchmarkServiceAuroraPostgresDatabaseClusterDD5B86C0": Object {
       "DeletionPolicy": "Delete",
       "Properties": Object {
@@ -327,62 +379,6 @@ Object {
         ],
       },
       "Type": "AWS::RDS::DBCluster",
-      "UpdateReplacePolicy": "Delete",
-    },
-    "BenchmarkServiceAuroraPostgresDatabaseClusterInstance169EA58DC": Object {
-      "DeletionPolicy": "Delete",
-      "DependsOn": Array [
-        "VpcdatabaseSubnet1RouteTableAssociationEE6CA36B",
-        "VpcdatabaseSubnet2RouteTableAssociationCADBAF9A",
-      ],
-      "Properties": Object {
-        "DBClusterIdentifier": Object {
-          "Ref": "BenchmarkServiceAuroraPostgresDatabaseClusterDD5B86C0",
-        },
-        "DBInstanceClass": "db.t4g.medium",
-        "DBSubnetGroupName": Object {
-          "Ref": "BenchmarkServiceAuroraPostgresDatabaseClusterSubnetsA4D791AE",
-        },
-        "EnablePerformanceInsights": true,
-        "Engine": "aurora-postgresql",
-        "PerformanceInsightsKMSKeyId": Object {
-          "Fn::GetAtt": Array [
-            "BenchmarkServiceDBPerformanceInsightEncryptionKey892D2812",
-            "Arn",
-          ],
-        },
-        "PerformanceInsightsRetentionPeriod": 7,
-        "PubliclyAccessible": false,
-      },
-      "Type": "AWS::RDS::DBInstance",
-      "UpdateReplacePolicy": "Delete",
-    },
-    "BenchmarkServiceAuroraPostgresDatabaseClusterInstance2F3AFC2D0": Object {
-      "DeletionPolicy": "Delete",
-      "DependsOn": Array [
-        "VpcdatabaseSubnet1RouteTableAssociationEE6CA36B",
-        "VpcdatabaseSubnet2RouteTableAssociationCADBAF9A",
-      ],
-      "Properties": Object {
-        "DBClusterIdentifier": Object {
-          "Ref": "BenchmarkServiceAuroraPostgresDatabaseClusterDD5B86C0",
-        },
-        "DBInstanceClass": "db.t4g.medium",
-        "DBSubnetGroupName": Object {
-          "Ref": "BenchmarkServiceAuroraPostgresDatabaseClusterSubnetsA4D791AE",
-        },
-        "EnablePerformanceInsights": true,
-        "Engine": "aurora-postgresql",
-        "PerformanceInsightsKMSKeyId": Object {
-          "Fn::GetAtt": Array [
-            "BenchmarkServiceDBPerformanceInsightEncryptionKey892D2812",
-            "Arn",
-          ],
-        },
-        "PerformanceInsightsRetentionPeriod": 7,
-        "PubliclyAccessible": false,
-      },
-      "Type": "AWS::RDS::DBInstance",
       "UpdateReplacePolicy": "Delete",
     },
     "BenchmarkServiceAuroraPostgresDatabaseClusterSecretAttachmentA817D394": Object {
@@ -519,7 +515,7 @@ Object {
             },
           },
           "ImageId": Object {
-            "Ref": "SsmParameterValueawsserviceamiamazonlinuxlatestamzn2amihvmx8664gp2C96584B6F00A464EAD1953AFF4B05118Parameter",
+            "Ref": "SsmParameterValueawsserviceamiamazonlinuxlatestamzn2amikernel510hvmx8664gp2C96584B6F00A464EAD1953AFF4B05118Parameter",
           },
           "InstanceType": "t3.micro",
           "SecurityGroupIds": Array [

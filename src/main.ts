@@ -53,7 +53,7 @@ export class BenchmarkDbStack extends Stack {
 
     const vpc = new ec2.Vpc(this, 'Vpc', {
       vpcName: this.vpcName,
-      cidr: this.vpcCidr,
+      ipAddresses: ec2.IpAddresses.cidr(this.vpcCidr),
       natGateways: 1,
       subnetConfiguration: [
         {
@@ -63,7 +63,7 @@ export class BenchmarkDbStack extends Stack {
         },
         {
           name: 'application',
-          subnetType: ec2.SubnetType.PRIVATE_WITH_NAT,
+          subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS,
           cidrMask: 24,
         },
         {
