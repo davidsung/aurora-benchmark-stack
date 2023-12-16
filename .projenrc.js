@@ -2,7 +2,7 @@ const { awscdk } = require('projen');
 const project = new awscdk.AwsCdkTypeScriptApp({
   authorEmail: 'david@davidsung.io',
   authorName: 'David Sung',
-  cdkVersion: '2.72.1',
+  cdkVersion: '2.113.0',
   defaultReleaseBranch: 'main',
   name: 'aurora-benchmark-stack',
   gitignore: [

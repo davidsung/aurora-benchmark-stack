@@ -34,6 +34,9 @@ Object {
       "ap-southeast-3": Object {
         "states": "states.ap-southeast-3.amazonaws.com",
       },
+      "ap-southeast-4": Object {
+        "states": "states.ap-southeast-4.amazonaws.com",
+      },
       "ca-central-1": Object {
         "states": "states.ca-central-1.amazonaws.com",
       },
@@ -66,6 +69,9 @@ Object {
       },
       "eu-west-3": Object {
         "states": "states.eu-west-3.amazonaws.com",
+      },
+      "il-central-1": Object {
+        "states": "states.il-central-1.amazonaws.com",
       },
       "me-central-1": Object {
         "states": "states.me-central-1.amazonaws.com",
@@ -498,6 +504,10 @@ Object {
       },
     },
     "BenchmarkServiceAutoscalerAutoscalerLaunchTemplate820DF0DF": Object {
+      "DependsOn": Array [
+        "BenchmarkServiceAutoscalerRoleDefaultPolicy338718A2",
+        "BenchmarkServiceAutoscalerRoleAF8D0CDD",
+      ],
       "Properties": Object {
         "LaunchTemplateData": Object {
           "IamInstanceProfile": Object {
@@ -747,7 +757,7 @@ sudo chmod +x /home/ec2-user/benchmark/*.sh",
           "S3Bucket": Object {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "903be65b9594a9f17d7120273620367e7830b6d087fc9591f31dc5a080049e46.zip",
+          "S3Key": "7382a0addb9f34974a1ea6c6c9b063882af874828f366f5c93b2b7b64db15c94.zip",
         },
         "Description": "AWS CDK resource provider framework - isComplete (test/BenchmarkService/Autoscaler/DBAvailabilityZoneAwarenessCustomResource/Provider)",
         "Environment": Object {
@@ -773,7 +783,7 @@ sudo chmod +x /home/ec2-user/benchmark/*.sh",
             "Arn",
           ],
         },
-        "Runtime": "nodejs14.x",
+        "Runtime": "nodejs18.x",
         "Timeout": 900,
       },
       "Type": "AWS::Lambda::Function",
@@ -887,7 +897,7 @@ sudo chmod +x /home/ec2-user/benchmark/*.sh",
           "S3Bucket": Object {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "903be65b9594a9f17d7120273620367e7830b6d087fc9591f31dc5a080049e46.zip",
+          "S3Key": "7382a0addb9f34974a1ea6c6c9b063882af874828f366f5c93b2b7b64db15c94.zip",
         },
         "Description": "AWS CDK resource provider framework - onEvent (test/BenchmarkService/Autoscaler/DBAvailabilityZoneAwarenessCustomResource/Provider)",
         "Environment": Object {
@@ -916,7 +926,7 @@ sudo chmod +x /home/ec2-user/benchmark/*.sh",
             "Arn",
           ],
         },
-        "Runtime": "nodejs14.x",
+        "Runtime": "nodejs18.x",
         "Timeout": 900,
       },
       "Type": "AWS::Lambda::Function",
@@ -1037,7 +1047,7 @@ sudo chmod +x /home/ec2-user/benchmark/*.sh",
           "S3Bucket": Object {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "903be65b9594a9f17d7120273620367e7830b6d087fc9591f31dc5a080049e46.zip",
+          "S3Key": "7382a0addb9f34974a1ea6c6c9b063882af874828f366f5c93b2b7b64db15c94.zip",
         },
         "Description": "AWS CDK resource provider framework - onTimeout (test/BenchmarkService/Autoscaler/DBAvailabilityZoneAwarenessCustomResource/Provider)",
         "Environment": Object {
@@ -1063,7 +1073,7 @@ sudo chmod +x /home/ec2-user/benchmark/*.sh",
             "Arn",
           ],
         },
-        "Runtime": "nodejs14.x",
+        "Runtime": "nodejs18.x",
         "Timeout": 900,
       },
       "Type": "AWS::Lambda::Function",
