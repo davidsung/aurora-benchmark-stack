@@ -58,6 +58,7 @@ export interface BenchmarkServiceProps {
   readonly pgBenchProgress?: number;
   readonly pgBenchTime?: number;
   readonly pgVacuumTables?: string[];
+  readonly txGenerationScript?: string;
   readonly pgBenchSql?: string;
 }
 
@@ -245,6 +246,7 @@ jq -r \'.AutoScalingInstances[] | select (.AutoScalingGroupName == "${this.asgNa
         this.pgBenchProgress,
         this.pgBenchTime,
         this.logGroupName,
+        props.txGenerationScript,
         props.pgVacuumTables,
         props.pgBenchSql,
       );
@@ -290,14 +292,15 @@ jq -r \'.AutoScalingInstances[] | select (.AutoScalingGroupName == "${this.asgNa
       ],
     };
 
-    return `aws ssm send-command --targets ${targets} \
---document-name "AWS-RunShellScript" \
---document-version "1" \
---parameters '${JSON.stringify(defaultExecDocumentParameters)}' \
---timeout-seconds ${time} \
---max-concurrency "50" \
---max-errors "0" \
---cloud-watch-output-config '{"CloudWatchLogGroupName":"${logGroupName}","CloudWatchOutputEnabled":true}'`;
+    return this.ssmRunShellScriptOnTargets(targets, time, logGroupName, defaultExecDocumentParameters);
+    //     return `aws ssm send-command --targets ${targets} \
+    // --document-name "AWS-RunShellScript" \
+    // --document-version "1" \
+    // --parameters '${JSON.stringify(defaultExecDocumentParameters)}' \
+    // --timeout-seconds ${time} \
+    // --max-concurrency "50" \
+    // --max-errors "0" \
+    // --cloud-watch-output-config '{"CloudWatchLogGroupName":"${logGroupName}","CloudWatchOutputEnabled":true}'`;
   }
 
   private pgBenchCustomInitDocument(asgName: string, logGroupName: string) {
@@ -323,30 +326,40 @@ jq -r \'.AutoScalingInstances[] | select (.AutoScalingGroupName == "${this.asgNa
 
   private pgBenchCustomTxDocument(targets: string,
     connections: number, threads: number, progress: number, time: number,
-    logGroupName: string, vacuumTables?: string[], sql?: string) {
+    logGroupName: string, txGenerationScript?: string, vacuumTables?: string[], sql?: string) {
     const execDocumentParameters = {
       workingDirectory: [''],
       executionTimeout: ['3600'],
       commands: [
+        'exec 2>&1',
         `export STACK_NAME=${Stack.of(this).stackName}`,
         `export BENCHMARK_CONNECTIONS=${connections}`,
         `export BENCHMARK_THREADS=${threads}`,
         `export BENCHMARK_PROGRESS=${progress}`,
         `export BENCHMARK_TIME=${time}`,
         `export BENCHMARK_SQL_FILE=${sql}`,
+        'cd /home/ec2-user/benchmark/custom_schema',
+        ...(txGenerationScript != undefined ? [txGenerationScript] : []),
         'cd /home/ec2-user/benchmark/',
         'source /home/ec2-user/benchmark/postgres_writer_env.sh',
-        `/home/ec2-user/benchmark/vacuum_analyze.sh ${vacuumTables?.join()} 2>&1`,
-        `/home/ec2-user/benchmark/image_capture.sh 2>&1`,
-        '/home/ec2-user/benchmark/benchmark_custom.sh 2>&1',
-        `/home/ec2-user/benchmark/image_capture.sh 2>&1`,
+        ...(vacuumTables != undefined ?
+          [`/home/ec2-user/benchmark/vacuum_analyze.sh ${vacuumTables.join()}`] : []),
+        'echo -n "Before image"',
+        '/home/ec2-user/benchmark/image_capture.sh',
+        '/home/ec2-user/benchmark/benchmark_custom.sh',
+        'echo -n "After image"',
+        '/home/ec2-user/benchmark/image_capture.sh',
       ],
     };
 
+    return this.ssmRunShellScriptOnTargets(targets, time, logGroupName, execDocumentParameters);
+  }
+
+  private ssmRunShellScriptOnTargets(targets: string, time: number, logGroupName: string, parameters: any) {
     return `aws ssm send-command --targets ${targets} \
 --document-name "AWS-RunShellScript" \
 --document-version "1" \
---parameters '${JSON.stringify(execDocumentParameters)}' \
+--parameters '${JSON.stringify(parameters)}' \
 --timeout-seconds ${time} \
 --max-concurrency "50" \
 --max-errors "0" \

@@ -2,7 +2,7 @@ const { awscdk } = require('projen');
 const project = new awscdk.AwsCdkTypeScriptApp({
   authorEmail: 'david@davidsung.io',
   authorName: 'David Sung',
-  cdkVersion: '2.27.0',
+  cdkVersion: '2.72.1',
   defaultReleaseBranch: 'main',
   name: 'aurora-benchmark-stack',
   gitignore: [
@@ -14,7 +14,9 @@ const project = new awscdk.AwsCdkTypeScriptApp({
 
   // deps: [],                /* Runtime dependencies of this module. */
   // description: undefined,  /* The description is just a string that helps people understand the purpose of the package. */
-  // devDeps: [],             /* Build dependencies for this module. */
+  devDeps: [
+    'ts-node@^10',
+  ], /* Build dependencies for this module. */
   // packageName: undefined,  /* The "name" in package.json. */
 });
 project.synth();

@@ -22,6 +22,9 @@ Object {
       "ap-south-1": Object {
         "states": "states.ap-south-1.amazonaws.com",
       },
+      "ap-south-2": Object {
+        "states": "states.ap-south-2.amazonaws.com",
+      },
       "ap-southeast-1": Object {
         "states": "states.ap-southeast-1.amazonaws.com",
       },
@@ -43,6 +46,9 @@ Object {
       "eu-central-1": Object {
         "states": "states.eu-central-1.amazonaws.com",
       },
+      "eu-central-2": Object {
+        "states": "states.eu-central-2.amazonaws.com",
+      },
       "eu-north-1": Object {
         "states": "states.eu-north-1.amazonaws.com",
       },
@@ -60,6 +66,9 @@ Object {
       },
       "eu-west-3": Object {
         "states": "states.eu-west-3.amazonaws.com",
+      },
+      "me-central-1": Object {
+        "states": "states.me-central-1.amazonaws.com",
       },
       "me-south-1": Object {
         "states": "states.me-south-1.amazonaws.com",
@@ -100,38 +109,6 @@ Object {
     "AsgName": Object {
       "Value": Object {
         "Ref": "BenchmarkServiceAutoscalerASG4E12DE6C",
-      },
-    },
-    "CustomInit": Object {
-      "Value": Object {
-        "Fn::Join": Array [
-          "",
-          Array [
-            "aws ssm send-command --targets --instance-ids $(aws autoscaling describe-auto-scaling-groups --auto-scaling-group-names ",
-            Object {
-              "Ref": "BenchmarkServiceAutoscalerASG4E12DE6C",
-            },
-            " | jq -r \\".AutoScalingGroups[].Instances | first .InstanceId\\") --document-name \\"AWS-RunShellScript\\" --document-version \\"1\\" --parameters '{\\"workingDirectory\\":[\\"\\"],\\"executionTimeout\\":[\\"3600\\"],\\"commands\\":[\\"export STACK_NAME=test\\",\\"cd /home/ec2-user/benchmark/\\",\\"source /home/ec2-user/benchmark/postgres_writer_env.sh\\",\\"nohup /home/ec2-user/benchmark/psql < custom_init.sql 2>&1 &\\"]}' --timeout-seconds 600 --cloud-watch-output-config '{\\"CloudWatchLogGroupName\\":\\"",
-            Object {
-              "Ref": "BenchmarkServiceLogGroupD6F7E1F0",
-            },
-            "\\",\\"CloudWatchOutputEnabled\\":true}'",
-          ],
-        ],
-      },
-    },
-    "CustomTx": Object {
-      "Value": Object {
-        "Fn::Join": Array [
-          "",
-          Array [
-            "aws ssm send-command --targets Key=tag:benchmark,Values=transaction_group --document-name \\"AWS-RunShellScript\\" --document-version \\"1\\" --parameters '{\\"workingDirectory\\":[\\"\\"],\\"executionTimeout\\":[\\"3600\\"],\\"commands\\":[\\"export STACK_NAME=test\\",\\"export BENCHMARK_CONNECTIONS=50\\",\\"export BENCHMARK_THREADS=24\\",\\"export BENCHMARK_PROGRESS=60\\",\\"export BENCHMARK_TIME=600\\",\\"export BENCHMARK_SQL_FILE=custom_upsert.sql\\",\\"cd /home/ec2-user/benchmark/\\",\\"source /home/ec2-user/benchmark/postgres_writer_env.sh\\",\\"/home/ec2-user/benchmark/vacuum_analyze.sh instruction,journal 2>&1\\",\\"/home/ec2-user/benchmark/image_capture.sh 2>&1\\",\\"nohup /home/ec2-user/benchmark/benchmark_custom.sh 2>&1\\",\\"/home/ec2-user/benchmark/image_capture.sh 2>&1\\"]}' --timeout-seconds 600 --max-concurrency \\"50\\" --max-errors \\"0\\" --cloud-watch-output-config '{\\"CloudWatchLogGroupName\\":\\"",
-            Object {
-              "Ref": "BenchmarkServiceLogGroupD6F7E1F0",
-            },
-            "\\",\\"CloudWatchOutputEnabled\\":true}'",
-          ],
-        ],
       },
     },
     "DBDatabaseName": Object {
@@ -249,7 +226,7 @@ Object {
             Object {
               "Ref": "BenchmarkServiceAutoscalerASG4E12DE6C",
             },
-            " | jq -r \\".AutoScalingGroups[].Instances | first .InstanceId\\") --document-name \\"AWS-RunShellScript\\" --document-version \\"1\\" --parameters '{\\"workingDirectory\\":[\\"\\"],\\"executionTimeout\\":[\\"3600\\"],\\"commands\\":[\\"export STACK_NAME=test\\",\\"export BENCHMARK_SCALE_FACTOR=10000\\",\\"export BENCHMARK_FILL_FACTOR=90\\",\\"cd /home/ec2-user/benchmark/\\",\\"source /home/ec2-user/benchmark/postgres_writer_env.sh\\",\\"nohup /home/ec2-user/benchmark/benchmark_init.sh 2>&1 &\\"]}' --timeout-seconds 600 --cloud-watch-output-config '{\\"CloudWatchLogGroupName\\":\\"",
+            " | jq -r \\".AutoScalingGroups[].Instances | first .InstanceId\\") --document-name \\"AWS-RunShellScript\\" --document-version \\"1\\" --parameters '{\\"workingDirectory\\":[\\"\\"],\\"executionTimeout\\":[\\"3600\\"],\\"commands\\":[\\"export STACK_NAME=test\\",\\"export BENCHMARK_SCALE_FACTOR=1000\\",\\"export BENCHMARK_FILL_FACTOR=90\\",\\"cd /home/ec2-user/benchmark/\\",\\"source /home/ec2-user/benchmark/postgres_writer_env.sh\\",\\"nohup /home/ec2-user/benchmark/benchmark_init.sh 2>&1 &\\"]}' --timeout-seconds 600 --cloud-watch-output-config '{\\"CloudWatchLogGroupName\\":\\"",
             Object {
               "Ref": "BenchmarkServiceLogGroupD6F7E1F0",
             },
@@ -263,7 +240,7 @@ Object {
         "Fn::Join": Array [
           "",
           Array [
-            "aws ssm send-command --targets Key=tag:benchmark,Values=transaction_group --document-name \\"AWS-RunShellScript\\" --document-version \\"1\\" --parameters '{\\"workingDirectory\\":[\\"\\"],\\"executionTimeout\\":[\\"3600\\"],\\"commands\\":[\\"export STACK_NAME=test\\",\\"export BENCHMARK_CONNECTIONS=50\\",\\"export BENCHMARK_THREADS=24\\",\\"export BENCHMARK_PROGRESS=60\\",\\"export BENCHMARK_TIME=600\\",\\"cd /home/ec2-user/benchmark/\\",\\"source /home/ec2-user/benchmark/postgres_writer_env.sh\\",\\"nohup /home/ec2-user/benchmark/benchmark_default.sh 2>&1 &\\"]}' --timeout-seconds 600 --max-concurrency \\"50\\" --max-errors \\"0\\" --cloud-watch-output-config '{\\"CloudWatchLogGroupName\\":\\"",
+            "aws ssm send-command --targets Key=tag:benchmark,Values=transaction_group --document-name \\"AWS-RunShellScript\\" --document-version \\"1\\" --parameters '{\\"workingDirectory\\":[\\"\\"],\\"executionTimeout\\":[\\"3600\\"],\\"commands\\":[\\"export STACK_NAME=test\\",\\"export BENCHMARK_CONNECTIONS=10\\",\\"export BENCHMARK_THREADS=2\\",\\"export BENCHMARK_PROGRESS=60\\",\\"export BENCHMARK_TIME=300\\",\\"cd /home/ec2-user/benchmark/\\",\\"source /home/ec2-user/benchmark/postgres_writer_env.sh\\",\\"nohup /home/ec2-user/benchmark/benchmark_default.sh 2>&1 &\\"]}' --timeout-seconds 300 --max-concurrency \\"50\\" --max-errors \\"0\\" --cloud-watch-output-config '{\\"CloudWatchLogGroupName\\":\\"",
             Object {
               "Ref": "BenchmarkServiceLogGroupD6F7E1F0",
             },
@@ -348,6 +325,10 @@ Object {
     },
     "BenchmarkServiceAuroraPostgresDatabaseClusterInstance169EA58DC": Object {
       "DeletionPolicy": "Delete",
+      "DependsOn": Array [
+        "VpcdatabaseSubnet1RouteTableAssociationEE6CA36B",
+        "VpcdatabaseSubnet2RouteTableAssociationCADBAF9A",
+      ],
       "Properties": Object {
         "DBClusterIdentifier": Object {
           "Ref": "BenchmarkServiceAuroraPostgresDatabaseClusterDD5B86C0",
@@ -358,7 +339,6 @@ Object {
         },
         "EnablePerformanceInsights": true,
         "Engine": "aurora-postgresql",
-        "EngineVersion": "12.8",
         "PerformanceInsightsKMSKeyId": Object {
           "Fn::GetAtt": Array [
             "BenchmarkServiceDBPerformanceInsightEncryptionKey892D2812",
@@ -373,6 +353,10 @@ Object {
     },
     "BenchmarkServiceAuroraPostgresDatabaseClusterInstance2F3AFC2D0": Object {
       "DeletionPolicy": "Delete",
+      "DependsOn": Array [
+        "VpcdatabaseSubnet1RouteTableAssociationEE6CA36B",
+        "VpcdatabaseSubnet2RouteTableAssociationCADBAF9A",
+      ],
       "Properties": Object {
         "DBClusterIdentifier": Object {
           "Ref": "BenchmarkServiceAuroraPostgresDatabaseClusterDD5B86C0",
@@ -383,7 +367,6 @@ Object {
         },
         "EnablePerformanceInsights": true,
         "Engine": "aurora-postgresql",
-        "EngineVersion": "12.8",
         "PerformanceInsightsKMSKeyId": Object {
           "Fn::GetAtt": Array [
             "BenchmarkServiceDBPerformanceInsightEncryptionKey892D2812",
@@ -570,12 +553,12 @@ sudo amazon-linux-extras install postgresql12
 sudo yum install -y jq postgresql-contrib
 mkdir /home/ec2-user/benchmark
 cd /home/ec2-user/benchmark
-mkdir -p $(dirname '/home/ec2-user/benchmark/22c926f485bc5ecd841df645ff57e90b7afc19026e7c8e4c5f5c3025fdfd805c.zip')
+mkdir -p $(dirname '/home/ec2-user/benchmark/2a4bce2ab6506dc7b7de7ff68cd8c8fa27d4d0af1e0641b27dfcab5ab2f78e21.zip')
 aws s3 cp 's3://",
                   Object {
                     "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
                   },
-                  "/22c926f485bc5ecd841df645ff57e90b7afc19026e7c8e4c5f5c3025fdfd805c.zip' '/home/ec2-user/benchmark/22c926f485bc5ecd841df645ff57e90b7afc19026e7c8e4c5f5c3025fdfd805c.zip'
+                  "/2a4bce2ab6506dc7b7de7ff68cd8c8fa27d4d0af1e0641b27dfcab5ab2f78e21.zip' '/home/ec2-user/benchmark/2a4bce2ab6506dc7b7de7ff68cd8c8fa27d4d0af1e0641b27dfcab5ab2f78e21.zip'
 aws configure set region ",
                   Object {
                     "Ref": "AWS::Region",
@@ -583,7 +566,7 @@ aws configure set region ",
                   "
 cp -r /root/.aws /home/ec2-user/
 sudo chown -R ec2-user: /home/ec2-user/.aws
-unzip 22c926f485bc5ecd841df645ff57e90b7afc19026e7c8e4c5f5c3025fdfd805c.zip
+unzip 2a4bce2ab6506dc7b7de7ff68cd8c8fa27d4d0af1e0641b27dfcab5ab2f78e21.zip
 cp -f /home/ec2-user/benchmark/ulimits.conf /etc/security/limits.conf
 sudo chown -R ec2-user: /home/ec2-user/benchmark
 sudo chmod +x /home/ec2-user/benchmark/*.sh",
@@ -592,6 +575,17 @@ sudo chmod +x /home/ec2-user/benchmark/*.sh",
             },
           },
         },
+        "TagSpecifications": Array [
+          Object {
+            "ResourceType": "launch-template",
+            "Tags": Array [
+              Object {
+                "Key": "Name",
+                "Value": "test/BenchmarkService/Autoscaler/AutoscalerLaunchTemplate",
+              },
+            ],
+          },
+        ],
       },
       "Type": "AWS::EC2::LaunchTemplate",
     },
@@ -753,7 +747,7 @@ sudo chmod +x /home/ec2-user/benchmark/*.sh",
           "S3Bucket": Object {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "eaeb69bc290b516fe3b049f89d6118b22249df682fbabf56af300cf345198574.zip",
+          "S3Key": "903be65b9594a9f17d7120273620367e7830b6d087fc9591f31dc5a080049e46.zip",
         },
         "Description": "AWS CDK resource provider framework - isComplete (test/BenchmarkService/Autoscaler/DBAvailabilityZoneAwarenessCustomResource/Provider)",
         "Environment": Object {
@@ -779,7 +773,7 @@ sudo chmod +x /home/ec2-user/benchmark/*.sh",
             "Arn",
           ],
         },
-        "Runtime": "nodejs12.x",
+        "Runtime": "nodejs14.x",
         "Timeout": 900,
       },
       "Type": "AWS::Lambda::Function",
@@ -893,7 +887,7 @@ sudo chmod +x /home/ec2-user/benchmark/*.sh",
           "S3Bucket": Object {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "eaeb69bc290b516fe3b049f89d6118b22249df682fbabf56af300cf345198574.zip",
+          "S3Key": "903be65b9594a9f17d7120273620367e7830b6d087fc9591f31dc5a080049e46.zip",
         },
         "Description": "AWS CDK resource provider framework - onEvent (test/BenchmarkService/Autoscaler/DBAvailabilityZoneAwarenessCustomResource/Provider)",
         "Environment": Object {
@@ -922,7 +916,7 @@ sudo chmod +x /home/ec2-user/benchmark/*.sh",
             "Arn",
           ],
         },
-        "Runtime": "nodejs12.x",
+        "Runtime": "nodejs14.x",
         "Timeout": 900,
       },
       "Type": "AWS::Lambda::Function",
@@ -1043,7 +1037,7 @@ sudo chmod +x /home/ec2-user/benchmark/*.sh",
           "S3Bucket": Object {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "eaeb69bc290b516fe3b049f89d6118b22249df682fbabf56af300cf345198574.zip",
+          "S3Key": "903be65b9594a9f17d7120273620367e7830b6d087fc9591f31dc5a080049e46.zip",
         },
         "Description": "AWS CDK resource provider framework - onTimeout (test/BenchmarkService/Autoscaler/DBAvailabilityZoneAwarenessCustomResource/Provider)",
         "Environment": Object {
@@ -1069,7 +1063,7 @@ sudo chmod +x /home/ec2-user/benchmark/*.sh",
             "Arn",
           ],
         },
-        "Runtime": "nodejs12.x",
+        "Runtime": "nodejs14.x",
         "Timeout": 900,
       },
       "Type": "AWS::Lambda::Function",
@@ -1332,17 +1326,7 @@ sudo chmod +x /home/ec2-user/benchmark/*.sh",
               "Action": "sts:AssumeRole",
               "Effect": "Allow",
               "Principal": Object {
-                "Service": Object {
-                  "Fn::Join": Array [
-                    "",
-                    Array [
-                      "ec2.",
-                      Object {
-                        "Ref": "AWS::URLSuffix",
-                      },
-                    ],
-                  ],
-                },
+                "Service": "ec2.amazonaws.com",
               },
             },
           ],
@@ -1855,6 +1839,10 @@ sudo chmod +x /home/ec2-user/benchmark/*.sh",
       "Type": "AWS::EC2::EIP",
     },
     "VpcingressSubnet1NATGateway5ADD866D": Object {
+      "DependsOn": Array [
+        "VpcingressSubnet1DefaultRoute4188A546",
+        "VpcingressSubnet1RouteTableAssociation5DF54E70",
+      ],
       "Properties": Object {
         "AllocationId": Object {
           "Fn::GetAtt": Array [

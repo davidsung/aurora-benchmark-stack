@@ -38,6 +38,7 @@ export interface BenchmarkDbStackProps extends StackProps {
   readonly pgBenchTime?: number;
   readonly pgVacuumTables?: string[];
   readonly pgBenchSql?: string;
+  readonly txGenerationScript?: string;
 }
 
 export class BenchmarkDbStack extends Stack {
@@ -97,6 +98,7 @@ export class BenchmarkDbStack extends Stack {
       pgBenchTime: props.pgBenchTime,
       pgVacuumTables: props.pgVacuumTables,
       pgBenchSql: props.pgBenchSql,
+      txGenerationScript: props.txGenerationScript,
     });
 
     new CfnOutput(this, 'LogGroupArn', {
@@ -204,6 +206,7 @@ new BenchmarkDbStack(app, stackName, {
     'journal',
   ],
   pgBenchSql: 'custom_schema/custom_insert.sql',
+  txGenerationScript: 'python3 generate_insert.py -n 1000',
 });
 
 app.synth();

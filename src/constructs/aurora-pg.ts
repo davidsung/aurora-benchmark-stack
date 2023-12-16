@@ -94,13 +94,23 @@ export class AuroraPostgresCluster extends Construct implements ec2.IConnectable
     // Allow postgresql port from benchmark instance
     if (props.autoscaler) {
       this.grantAccess(props.autoscaler);
-      // this._auroraPostgres.connections.allowDefaultPortFrom(props.autoscaler);
-      // this._auroraPostgres.secret?.grantRead(props.autoscaler);
     }
+
+    this.metrics();
   }
 
   public grantAccess(autoscaler: Autoscaler) {
     this._auroraPostgres.connections.allowDefaultPortFrom(autoscaler);
     this._auroraPostgres.secret?.grantRead(autoscaler);
+  }
+
+  private metrics() {
+    this._auroraPostgres.metricCPUUtilization();
+    this._auroraPostgres.metricDatabaseConnections();
+    this._auroraPostgres.metricFreeableMemory();
+    this._auroraPostgres.metricNetworkReceiveThroughput();
+    this._auroraPostgres.metricNetworkTransmitThroughput();
+    this._auroraPostgres.metricVolumeReadIOPs();
+    this._auroraPostgres.metricVolumeWriteIOPs();
   }
 }
