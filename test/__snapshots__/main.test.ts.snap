@@ -347,7 +347,7 @@ Object {
         },
         "DatabaseName": "postgres",
         "Engine": "aurora-postgresql",
-        "EngineVersion": "12.8",
+        "EngineVersion": "12.16",
         "KmsKeyId": Object {
           "Fn::GetAtt": Array [
             "BenchmarkServiceDBStorageEncryptionKeyB7C44211",

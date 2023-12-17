@@ -6,7 +6,7 @@ import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
 import { Construct } from 'constructs';
 import { Autoscaler } from './autoscaler';
 
-const DEFAULT_AURORA_ENGINE_VERSION = rds.AuroraPostgresEngineVersion.VER_12_8;
+const DEFAULT_AURORA_ENGINE_VERSION = rds.AuroraPostgresEngineVersion.VER_12_16;
 const DEFAULT_USERNAME = 'benchmark';
 const DEFAULT_DATABASE_NAME = 'postgres';
 const DEFAULT_INSTANCE_TYPE = ec2.InstanceType.of(
@@ -21,6 +21,7 @@ export interface AuroraPostgresClusterProps {
   readonly engineVersion?: rds.AuroraPostgresEngineVersion;
   readonly instanceType?: ec2.InstanceType;
   readonly instances?: number;
+  readonly enablePerformanceInsights?: boolean;
   readonly performanceInsightEncryptionKey?: kms.IKey;
   readonly storageEncryptionKey?: kms.IKey;
   readonly defaultUsername?: string;
@@ -70,14 +71,14 @@ export class AuroraPostgresCluster extends Construct implements ec2.IConnectable
       vpc: props.vpc,
       writer: rds.ClusterInstance.provisioned('ClusterInstanceWriter', {
         instanceType: this.instanceType,
-        enablePerformanceInsights: true,
+        enablePerformanceInsights: props.enablePerformanceInsights,
         performanceInsightEncryptionKey: props.performanceInsightEncryptionKey,
         parameters: props.instanceParameters,
       }),
       readers: [
         rds.ClusterInstance.provisioned('ClusterInstanceReader1', {
           instanceType: this.instanceType,
-          enablePerformanceInsights: true,
+          enablePerformanceInsights: props.enablePerformanceInsights,
           performanceInsightEncryptionKey: props.performanceInsightEncryptionKey,
           parameters: props.instanceParameters,
         }),

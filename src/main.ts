@@ -77,7 +77,7 @@ export class BenchmarkDbStack extends Stack {
     const benchmarkService = new BenchmarkService(this, 'BenchmarkService', {
       vpc,
       dbVpcSubnets: { subnetType: ec2.SubnetType.PRIVATE_ISOLATED },
-      dbEngineVersion: props.dbEngineVersion ?? rds.AuroraPostgresEngineVersion.VER_12_8,
+      dbEngineVersion: props.dbEngineVersion,
       dbInstanceType: props.dbInstanceType,
       dbCreateReplica: props.dbCreateReplica,
       dbMultiAz: props.dbMultiAz,
@@ -182,7 +182,7 @@ const app = new App();
 const stackName = 'aurora-benchmark-stack';
 new BenchmarkDbStack(app, stackName, {
   env,
-  dbEngineVersion: rds.AuroraPostgresEngineVersion.VER_13_3,
+  dbEngineVersion: rds.AuroraPostgresEngineVersion.VER_11_21,
   dbInstanceType: ec2.InstanceType.of(ec2.InstanceClass.R6G, ec2.InstanceSize.XLARGE16),
   dbCreateReplica: false,
   dbParameters: {

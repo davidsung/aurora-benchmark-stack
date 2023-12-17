@@ -3,7 +3,6 @@ import { Stack, Tags } from 'aws-cdk-lib';
 import * as autoscaling from 'aws-cdk-lib/aws-autoscaling';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as iam from 'aws-cdk-lib/aws-iam';
-import * as rds from 'aws-cdk-lib/aws-rds';
 import { Asset } from 'aws-cdk-lib/aws-s3-assets';
 import { Construct } from 'constructs';
 import { DBAvailabilityZoneAwarenessCustomResource } from './db-az-awareness-custom-resource';
@@ -22,7 +21,6 @@ const DEFAULT_AUTOSCALER_TAGS: { [key: string]: string } = {
 export interface AutoscalerProps {
   readonly asgName?: string;
   readonly vpc: ec2.IVpc;
-  readonly dbEngineVersion: rds.AuroraPostgresEngineVersion | rds.PostgresEngineVersion;
   readonly clusterIdentifier?: string;
   readonly instanceIdentifier?: string;
   readonly availabilityZones?: string[];

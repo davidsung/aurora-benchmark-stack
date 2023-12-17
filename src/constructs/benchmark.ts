@@ -29,7 +29,7 @@ export interface BenchmarkServiceProps {
   readonly vpc: ec2.IVpc;
 
   readonly dbVpcSubnets?: ec2.SubnetSelection;
-  readonly dbEngineVersion: rds.AuroraPostgresEngineVersion | rds.PostgresEngineVersion;
+  readonly dbEngineVersion?: rds.AuroraPostgresEngineVersion | rds.PostgresEngineVersion;
   readonly dbInstanceType?: ec2.InstanceType;
   readonly dbMultiAz?: boolean;
   readonly dbAllocatedStorage?: number;
@@ -120,7 +120,7 @@ export class BenchmarkService extends Construct {
       removalPolicy: RemovalPolicy.DESTROY,
     });
 
-    if (props.dbEngineVersion instanceof rds.AuroraPostgresEngineVersion) {
+    if (props.dbEngineVersion === undefined || props.dbEngineVersion instanceof rds.AuroraPostgresEngineVersion) {
       this.auroraPostgres = new AuroraPostgresCluster(this, 'AuroraPostgres', {
         vpc: props.vpc,
         vpcSubnets: props.dbVpcSubnets,
@@ -177,7 +177,6 @@ export class BenchmarkService extends Construct {
     const autoscaler = new Autoscaler(this, 'Autoscaler', {
       vpc: props.vpc,
       instanceType: props.computeInstanceType,
-      dbEngineVersion: props.dbEngineVersion,
       clusterIdentifier: this.auroraPostgres?.clusterIdentifier,
       instanceIdentifier: this.rdsPostgres?.dbWriterInstanceIdentifier,
       asgName: props.computeAsgName,
